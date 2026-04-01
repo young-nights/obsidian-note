@@ -1,35 +1,4 @@
-<style>
-.highlight{
-  color: white;
-  background: linear-gradient(90deg, #ff6b6b, #4ecdc4);
-  padding: 5px;
-  border-radius: 5px;
-}
 
-.mint_green{
-  color: white;
-  background: #adcdadf2; 
-  padding: 5px;
-  border-radius: 5px;
-}
-
-.red {
-  color: #ff0000;
-}
-.green {
-  color:rgb(10, 162, 10);
-}
-.blue {
-  color:rgb(17, 0, 255);
-}
-
-.wathet {
-  color:rgb(0, 132, 255);
-}
-</style>
-
-
-<font size=2>
 
 ```bash
 
@@ -76,7 +45,6 @@ Hi 用户名! You've successfully authenticated, but GITEE.COM does not provide 
 
 ```
 
-
 ```bash							
 				
 //--------------------------------------------------------------------------------------------------------				
@@ -85,7 +53,6 @@ Hi 用户名! You've successfully authenticated, but GITEE.COM does not provide 
 重命名本地分支  ：git branch -m 新分支名
 将重命名后的本地分支推送到远程仓库：git oush origin 新分支名
 删除旧的远程分支：git push origin --delete 旧分支名
-
 
 //--------------------------------------------------------------------------------------------------------				
 //--------------------------------------------------------------------------------------------------------
@@ -97,12 +64,9 @@ Hi 用户名! You've successfully authenticated, but GITEE.COM does not provide 
 (4) git commit -m "Initial Commit"
 (5) git push -u origin master
 
-
 如果确定本地的更改是正确的，并且不需要远程仓库的更改，可以使用强制推送：
 git push --force -u origin master
 
 拉取远程仓库的最新更改
 git pull origin master
 ```
-
-</font>
