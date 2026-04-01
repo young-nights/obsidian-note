@@ -1,0 +1,250 @@
+{
+  "main": {
+    "id": "bd309641958c7c73",
+    "type": "split",
+    "children": [
+      {
+        "id": "2f3260b3ed323e3f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "d7e07722a9ef36c9",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Linux涉及到的一些笔记/Cortex-A7汇编语言.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "Cortex-A7汇编语言"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "9cdaaa031af33c26",
+    "type": "split",
+    "children": [
+      {
+        "id": "a029f87d9ec8d993",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "35633defff4c98b4",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "eda205719d7967a6",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "ec9759a5fc76338f",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          },
+          {
+            "id": "9f94faba48ce3c20",
+            "type": "leaf",
+            "state": {
+              "type": "notebook-navigator",
+              "state": {},
+              "icon": "notebook-navigator",
+              "title": "笔记本导航器"
+            }
+          }
+        ],
+        "currentTab": 3
+      }
+    ],
+    "direction": "horizontal",
+    "width": 878.5
+  },
+  "right": {
+    "id": "a425b1d818dc3b69",
+    "type": "split",
+    "children": [
+      {
+        "id": "6596c660e2600baf",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "16a948c347645074",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks"
+            }
+          },
+          {
+            "id": "302ccf37b1f70ded",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Linux涉及到的一些笔记/Ubuntu-Server配置.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Ubuntu-Server配置"
+            }
+          },
+          {
+            "id": "6cb9980dbdaec374",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "1a551be987a3379a",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "5f09ea708a73a325",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Linux涉及到的一些笔记/Ubuntu-Server配置.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Ubuntu-Server配置"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:打开快速切换": false,
+      "graph:查看关系图谱": false,
+      "canvas:新建白板": false,
+      "daily-notes:打开/创建今天的日记": false,
+      "templates:插入模板": false,
+      "command-palette:打开命令面板": false,
+      "bases:新建数据库": false,
+      "notebook-navigator:笔记本导航器": false,
+      "templater-obsidian:Templater": false,
+      "open-vscode:VS Code": false,
+      "markdown-importer:打开 Markdown 格式转换器": false
+    }
+  },
+  "active": "9f94faba48ce3c20",
+  "lastOpenFiles": [
+    "openclaw",
+    "新建文件夹",
+    "Ubuntu-Server配置笔记/Ubuntu-Server-Git环境搭建.md",
+    "Ubuntu-Server配置笔记/Ubuntu-Server-OpenMV开发环境搭建.md",
+    "Untitled.base",
+    "IndexTTS-2本地部署[文本转语音]/IndexTTS-2本地部署文档.md",
+    "IndexTTS-2本地部署[文本转语音]/安装Pytroch.md",
+    "Linux涉及到的一些笔记/Cortex-A7汇编语言.md",
+    "Linux涉及到的一些笔记/Ubuntu-desktop配置.md",
+    "Linux涉及到的一些笔记/GCC_Type.svg",
+    "Ubuntu-Server配置笔记/images/openmv-cfg-1.png",
+    "Ubuntu-Server配置笔记/images/openmv-cfg-2.png",
+    "Ubuntu-Server配置笔记/Ubuntu-Server配置.md",
+    "Ubuntu-Server配置笔记/images/openmv-cfg-4.png",
+    "Ubuntu-Server配置笔记/images/images-docker-config-4.png",
+    "Ubuntu-Server配置笔记/images/openmv-cfg-3.png",
+    "Ubuntu-Server配置笔记/Ubuntu-Server-ESP32开发环境搭建.md",
+    "Ubuntu-Server配置笔记/Ubuntu-Server-网络代理配置.md",
+    "Ubuntu-Server配置笔记/images/images-docker-config-6.png",
+    "Ubuntu-Server配置笔记/images/esp32-docker-pic1.png",
+    "Ubuntu-Server配置笔记/images/images-docker-config-7.png",
+    "Ubuntu-Server配置笔记/images/mihomo-config-1.png",
+    "Ubuntu-Server配置笔记/images",
+    "Ubuntu-Server配置笔记/新建文件夹",
+    "IndexTTS本地部署[文本转语音]/IndexTTS本地部署文档.md",
+    "Ubuntu-Server配置笔记/mihomo-clash-meta/mihomo-linux-amd64-v1.19.17.gz",
+    "Ubuntu-Server配置笔记/mihomo-clash-meta",
+    "Ubuntu-Server配置笔记",
+    "Ubuntu-Server",
+    "LICENSE",
+    "Linux涉及到的一些笔记/Ubuntu-Server配置.md",
+    "Linux涉及到的一些笔记/Ubuntu-Server-网络代理配置.md",
+    "Linux涉及到的一些笔记/Ubuntu-Server-OpenMV开发环境搭建.md",
+    "Linux涉及到的一些笔记/IMX6ULL开发笔记/images/img_start_1.drawio",
+    "Linux涉及到的一些笔记/IMX6ULL开发笔记/IMX6U66启动方式.md",
+    "Linux涉及到的一些笔记/Ubuntu-Server-Git环境搭建.md",
+    "Linux涉及到的一些笔记/Ubuntu-Server-ESP32开发环境搭建.md",
+    "1.8-Linux涉及到的一些笔记/IMX6ULL开发笔记/IMX6U66启动方式.md",
+    "1.8-Linux涉及到的一些笔记/Ubuntu-Server配置.md",
+    "1.8-Linux涉及到的一些笔记/Ubuntu-Server-网络代理配置.md",
+    "1.8-Linux涉及到的一些笔记/Ubuntu-Server-OpenMV开发环境搭建.md",
+    "1.8-Linux涉及到的一些笔记/Ubuntu-Server-Git环境搭建.md",
+    "1.8-Linux涉及到的一些笔记/Ubuntu-Server-ESP32开发环境搭建.md",
+    "1.8-Linux涉及到的一些笔记/Ubuntu-desktop配置.md",
+    "1.8-Linux涉及到的一些笔记/Cortex-A7汇编语言.md",
+    "2026-04-01.md",
+    "Untitled.canvas"
+  ]
+}
