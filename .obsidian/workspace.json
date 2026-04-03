@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Openclaw本地部署笔记/Windows Docker Desktop+WSL+Ubuntu本地部署.md",
-                "mode": "source",
+                "file": "Openclaw本地部署笔记/Ubuntu-server-OpenClaw本地部署.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Windows Docker Desktop+WSL+Ubuntu本地部署"
+              "title": "Ubuntu-server-OpenClaw本地部署"
             }
           }
         ]
@@ -124,12 +124,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "Openclaw本地部署笔记/Windows Docker Desktop+WSL+Ubuntu本地部署.md",
+                "file": "Openclaw本地部署笔记/Ubuntu-server-OpenClaw本地部署.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "Windows Docker Desktop+WSL+Ubuntu本地部署 的出链列表"
+              "title": "Ubuntu-server-OpenClaw本地部署 的出链列表"
             }
           },
           {
@@ -181,7 +181,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -197,11 +198,11 @@
       "notebook-navigator:笔记本导航器": false
     }
   },
-  "active": "302ccf37b1f70ded",
+  "active": "3fdcbf4d2b6ceea3",
   "lastOpenFiles": [
-    "Openclaw本地部署笔记/Ubuntu-server-OpenClaw本地部署.md",
     "Openclaw本地部署笔记/Windows+WSL+Ubuntu本地部署.md",
     "Openclaw本地部署笔记/Windows Docker Desktop+WSL+Ubuntu本地部署.md",
+    "Openclaw本地部署笔记/Ubuntu-server-OpenClaw本地部署.md",
     "Openclaw本地部署笔记/🦞 Openclaw本地部署笔记 MOC.md",
     "TradingAgents本地部署[金融交易框架]",
     "Openclaw本地部署笔记/Ubu.txt",
