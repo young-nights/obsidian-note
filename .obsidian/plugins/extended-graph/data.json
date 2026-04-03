@@ -90,14 +90,14 @@
     "collapse-display": false,
     "showArrow": false,
     "textFadeMultiplier": 0,
-    "nodeSizeMultiplier": 1,
+    "nodeSizeMultiplier": 0.786,
     "lineSizeMultiplier": 1,
     "collapse-forces": false,
-    "centerStrength": 0.518713248970312,
+    "centerStrength": 0.604166666666667,
     "repelStrength": 10,
     "linkStrength": 1,
     "linkDistance": 250,
-    "scale": 0.713275462622429,
+    "scale": 0.9999999999999489,
     "close": true
   },
   "openInNewTab": false,
@@ -144,7 +144,7 @@
     }
   ],
   "startingStateID": "default-vault",
-  "syncDefaultState": false,
+  "syncDefaultState": true,
   "saveConfigsWithState": false,
   "customColorMaps": {},
   "imageProperties": [
@@ -330,7 +330,7 @@
   "collapseLegend": true,
   "resetAfterChanges": false,
   "collapsedSettings": {
-    "automation": true,
+    "automation": false,
     "tags": true,
     "properties": true,
     "links": true,
@@ -345,11 +345,11 @@
     "names": true,
     "zoom": true,
     "local-graph": true,
-    "display": true,
-    "filter": true,
-    "inputs": true,
-    "performances": true,
-    "beta": true
+    "display": false,
+    "filter": false,
+    "inputs": false,
+    "performances": false,
+    "beta": false
   },
   "selectionMode": "replace",
   "exportSVGOptions": {

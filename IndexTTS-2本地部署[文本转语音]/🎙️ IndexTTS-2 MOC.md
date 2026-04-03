@@ -16,9 +16,12 @@ folder: IndexTTS-2本地部署[文本转语音]
 ```dataviewjs
 const statusMap = { active: "🟢 进行中", planning: "🟡 规划中", archived: "📦 已归档" };
 const cur = dv.current();
+const noteCount = dv.pages('"IndexTTS-2本地部署[文本转语音]"')
+  .where(p => p.file.ext === "md" && p.file.name !== cur.file.name && !p.file.path.includes("Templates"))
+  .length;
 dv.table(["属性", "值"], [
   ["状态", statusMap[cur.status] || "❓"],
-  ["笔记数", cur.file.outlinks.length]
+  ["笔记数", noteCount]
 ]);
 ```
 

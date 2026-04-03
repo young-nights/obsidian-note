@@ -16,9 +16,12 @@ folder: Linux涉及到的一些笔记
 ```dataviewjs
 const statusMap = { active: "🟢 进行中", planning: "🟡 规划中", archived: "📦 已归档" };
 const cur = dv.current();
+const noteCount = dv.pages('"Linux涉及到的一些笔记"')
+  .where(p => p.file.ext === "md" && p.file.name !== cur.file.name && !p.file.path.includes("Templates"))
+  .length;
 dv.table(["属性", "值"], [
   ["状态", statusMap[cur.status] || "❓"],
-  ["笔记数", cur.file.outlinks.length]
+  ["笔记数", noteCount]
 ]);
 ```
 

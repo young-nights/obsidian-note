@@ -44,11 +44,14 @@ folder: "<%* folderPath %>"
 ```dataviewjs
 const statusMap = { active: "🟢 进行中", planning: "🟡 规划中", archived: "📦 已归档" };
 const cur = dv.current();
+const noteCount = dv.pages('"<%* folderPath %>"')
+  .where(p => p.file.ext === "md" && p.file.name !== cur.file.name && !p.file.path.includes("Templates"))
+  .length;
 dv.table(["属性", "值"], [
   ["状态", statusMap[cur.status] || "❓"],
   ["文件夹", cur.file.folder],
-  ["笔记数", cur.file.outlinks.length],
-  ["创建", cur.ctime.toFormat("YYYY-MM-DD")]
+  ["笔记数", noteCount],
+  ["创建", cur.file.ctime.toFormat("yyyy年M月d日")]
 ]);
 ```
 
