@@ -394,6 +394,7 @@ ln -sfn .openclaw openclaw-visible
 
 <font size=2>
 
+
 ```bash 
 # 1. 检查 Ollama 服务是否启动
 ollama --version
@@ -405,11 +406,108 @@ ollama serve &
 # 3. 测试本地 API
 curl http://127.0.0.1:11434/api/tags
 
+# 4. 修改 openclaw.json 文件 调用Ollama模型
+# 添加如下内容
 
-
-
+  "models": 
+  {
+    "providers": 
+    {
+      "ollama": 
+      {
+        "baseUrl": "http://host.docker.internal:11434/v1",  # 由于Ollama部署在Ubuntu中，Openclaw在dokcer中，因此设置网络路由使用docker的
+        "apiKey": "ollama-local",                           # 这个 apiKey 随便写一个就行
+        "api": "openai-completions",                        # 兼容OpenAI
+        "models": 
+        [
+          {
+            "id": "qwen3:14b",
+            "name": "qwen3:14b(Local)",
+            "contextWindow": 32768,
+            "maxTokens": 8192,
+            "reasoning": false
+          }
+        ]
+      }
+    }
+  },
+  "agents": 
+  {
+    "defaults": 
+    {
+      "model": 
+      {
+        "primary": "ollama/qwen3:14b",                      # 默认模型改为 ollama
+        "fallbacks": []                                     # ollama 失败时使用这个
+      },
+      "models": 
+      {
+        "ollama/dengcao/Qwen3-14B:Q5_K_M": {},              # 模型调用
+        "openrouter/auto": 
+        {
+          "alias": "OpenRouter"
+        },
+        "openrouter/xiaomi/mimo-v2-pro": {}
+      },
+      "workspace": "/home/node/.openclaw/workspace",
+      "compaction": 
+      {
+        "memoryFlush": 
+        {
+          "enabled": true
+        }
+      },
+      "subagents": 
+      {
+        "maxConcurrent": 8,
+        "maxSpawnDepth": 2,
+        "maxChildrenPerAgent": 5
+      },
+      "sandbox": 
+      {
+        "mode": "off"
+      }
+    },
+    "list": 
+    [
+      {
+        "id": "main",
+        "default": true,
+        "name": "主管",
+        "workspace": "/home/node/.openclaw/workspace/agents/main",
+        "model": 
+        {
+          "primary": "ollama/qwen3:14b",
+          "fallbacks": []
+        },
+        "subagents": 
+        {
+          "allowAgents": 
+          [
+            "coder",
+            "designer",
+            "secretary",
+            "product-analyst",
+            "evaluator"
+          ]
+        },
+        "sandbox": 
+        {
+          "mode": "off"
+        }
+      }
+    ]
+  }，
 
 ```
+
+**问题：**
+完成以上配置后，在Ubuntu环境中运行的 Ollama 被 openclaw 调用，但是出现 GPU 没有被使用（全部跑在CPU上）,37 层模型全部跑在 CPU 上，没有一层 offload 到显卡 RTX 4070 Ti.
+
+**解决方法：**
+启动 Ollama 时强制使用 CUDA：```bash OLLAMA_FLASH_ATTENTION=1 ollama serve &```
+
+
 
 </font>
 
