@@ -1,3 +1,10 @@
+---
+tags:
+  - openclaw
+created: 2026-04-02 18:19:00
+---
+
+
 # <font size=4>OpenClaw的本地部署</font>
 
 ## <font size=3>Docker的安装</font>

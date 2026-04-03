@@ -1,5 +1,6 @@
 ---
-tags: [config, guide]
+tags:
+  - openclaw
 created: 2026-04-02 18:19:00
 ---
 

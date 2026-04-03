@@ -1,3 +1,9 @@
+---
+tags:
+  - openclaw
+created: 2026-04-02 18:19:00
+---
+
 # <font size=4>Ubuntu Desktop 20.04.2 部署OpenClaw</font>
 
 ## <font size=3>前置准备</font>
