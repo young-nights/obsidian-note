@@ -501,13 +501,34 @@ curl http://127.0.0.1:11434/api/tags
 
 ```
 
+
 **问题：**
 完成以上配置后，在Ubuntu环境中运行的 Ollama 被 openclaw 调用，但是出现 GPU 没有被使用（全部跑在CPU上）,37 层模型全部跑在 CPU 上，没有一层 offload 到显卡 RTX 4070 Ti.
 
 **解决方法：**
-启动 Ollama 时强制使用 CUDA：```bash OLLAMA_FLASH_ATTENTION=1 ollama serve &```
 
+```bash
+# 1. 在 WSL 终端中执行下面的指令
+nvidia-smi -L
+# 会回复：GPU 0: NVIDIA GeForce RTX 4070 Ti SUPER 
+```
 
+![查询GPU通道](./images/ollama-config-png1.png)
+
+```bash
+# 2.  先杀掉ollama现有进程
+pkill -f ollama
+# 2.1 修改.bashr文件
+nano ~/.bashrc
+# 2.2 在文件最底部添加以下内容
+# Ollama GPU 相关优化设置
+export CUDA_VISIBLE_DEVICES=0     # 只用第0张显卡
+export OLLAMA_FLASH_ATTENTION=1   # 开启速度+省显存优化
+export OLLAMA_GPU_OVERHEAD=1      # 预留一点显存，帮助 GPU 检测
+
+# 3. 启动 Ollama
+ollama serve &
+```
 
 </font>
 
