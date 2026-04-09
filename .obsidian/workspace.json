@@ -4,21 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "24326dfeeaae8dbb",
+        "id": "081b6c995743e1b2",
         "type": "tabs",
         "children": [
           {
-            "id": "3fdcbf4d2b6ceea3",
+            "id": "d263037d291d3c61",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Openclaw本地部署笔记/Windows Docker Desktop+WSL+Ubuntu本地部署.md",
+                "file": "Openclaw本地部署笔记/Windows+WSL+Ubuntu本地部署.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Windows Docker Desktop+WSL+Ubuntu本地部署"
+              "title": "Windows+WSL+Ubuntu本地部署"
             }
           }
         ]
@@ -197,13 +197,21 @@
       "notebook-navigator:笔记本导航器": false
     }
   },
-  "active": "3fdcbf4d2b6ceea3",
+  "active": "d263037d291d3c61",
   "lastOpenFiles": [
-    "Openclaw本地部署笔记/images/ollama-config-png1.png",
-    "Openclaw本地部署笔记/Windows+WSL+Ubuntu本地部署.md",
-    "Openclaw本地部署笔记/Ubuntu-desktop-OpenClaw本地部署.md",
-    "Openclaw本地部署笔记/Ubuntu-server-OpenClaw本地部署.md",
     "Openclaw本地部署笔记/Windows Docker Desktop+WSL+Ubuntu本地部署.md",
+    "Openclaw本地部署笔记/Windows+WSL+Ubuntu本地部署.md",
+    "Openclaw本地部署笔记/Ubuntu-server-OpenClaw本地部署.md",
+    "VScode 前端开发笔记/VScode前端开发环境搭建.md",
+    "VScode 前端开发笔记/📁 VScode 前端开发笔记 MOC.md",
+    "VScode 前端开发笔记/VScode 前端开发笔记.md",
+    "VScode 前端开发环境搭建/新建 文本文档.txt",
+    "VScode 前端开发笔记/images",
+    "VScode 前端开发环境搭建/新建文件夹",
+    "VScode 前端开发笔记",
+    "Windows+VScode 前端开发环境搭建",
+    "Openclaw本地部署笔记/images/ollama-config-png1.png",
+    "Openclaw本地部署笔记/Ubuntu-desktop-OpenClaw本地部署.md",
     "Openclaw本地部署笔记/🦞 Openclaw本地部署笔记 MOC.md",
     "TradingAgents本地部署[金融交易框架]",
     "Openclaw本地部署笔记/Ubu.txt",
@@ -230,21 +238,13 @@
     "Openclaw本地部署笔记/images/openclaw-widnows-3.png",
     "Openclaw本地部署笔记/images/openclaw-widnows-2.png",
     "Openclaw本地部署笔记/images/openclaw-widnows-11.png",
-    "Openclaw本地部署笔记/images/openclaw-widnows-10.png",
     "Openclaw本地部署笔记/images",
     "Templates For Templator/MOC Template.md",
     "IndexTTS-2本地部署[文本转语音]/Windows安装Miniconda.md",
     "Ubuntu-Server配置笔记/Ubuntu-Server-OpenMV开发环境搭建.md",
     "约束条件.md",
-    "新建 文本文档.txt",
-    "IndexTTS-2本地部署[文本转语音]/sedb8oWll",
     "Ubuntu-Server配置笔记/Ubuntu-Server-ESP32开发环境搭建.md",
-    "IndexTTS-2本地部署[文本转语音]/sed9Vt48R",
-    "IndexTTS-2本地部署[文本转语音]/sedEnWn0C",
-    "IndexTTS-2本地部署[文本转语音]/sedSXXuPF",
     "📚 Obsidian Note MOC.md",
-    "IndexTTS-2本地部署[文本转语音]/安装Pytroch.md",
-    "Ubuntu-Server配置笔记/Ubuntu-Server Programming MOC.md",
     "Untitled.canvas"
   ]
 }
