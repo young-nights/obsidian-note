@@ -418,18 +418,16 @@ OpenSpace 提供了几个强大工具，例如：
 - `skill-discovery`（技能发现与演化）
 
 
-**启动前端(手动)**
+**启动后端(手动)**
 
 ```bash
 openspace-dashboard --port 7788 --host 127.0.0.1
-#或者
-openspace-dashboard --port 7788 --host 127.0.0.1 --log-level debug
 
 # 启动成功后会看到
 Running on http://127.0.0.1:7788
 ```
 
-**启动后端(手动)**
+**启动前端(手动)**
 
 ```bash
 # 进入到这个路径
@@ -488,6 +486,14 @@ echo "=== OpenSpace Status ==="
 ss -tlnn | grep -E "7788|3789" || echo "⚠️ 未检测到监听端口"
 echo "访问地址: http://127.0.0.1:3789"
 ```
+
+</font>
+
+
+
+### <font size=2>Osidian</font>
+
+<font size=2>
 
 
 
