@@ -1,0 +1,22 @@
+{
+  "accounts": [
+    {
+      "name": "备用邮箱",
+      "email": "1845243912@qq.com",
+      "auth_code": "qvpasnmparzyjeag",
+      "description": "备用邮箱"
+    },
+    {
+      "name": "主邮箱",
+      "email": "2863692760@qq.com",
+      "auth_code": "onogvozhvosxdhcb",
+      "description": "主要工作邮箱"
+    }
+  ],
+  "settings": {
+    "check_interval": 300,
+    "max_emails": 50,
+    "auto_classify": true,
+    "notify_urgent": true
+  }
+}
