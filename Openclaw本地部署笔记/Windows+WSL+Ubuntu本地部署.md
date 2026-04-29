@@ -491,6 +491,158 @@ echo "访问地址: http://127.0.0.1:3789"
 
 
 
+### <font size=2>OpenSpace MCP 自启动配置（SSE 模式）</font>
+
+<font size=2>
+
+> [!info] 背景说明
+> 默认的 `command: "openspace-mcp"` 使用 stdio 模式，每次调用时启动进程，存在超时和冷启动问题。
+> 推荐使用 SSE 模式：OpenSpace 作为常驻后台服务运行，OpenClaw 通过 HTTP 连接，无冷启动开销。
+
+**step1: 修改 openclaw.json 中的 MCP 配置**
+
+将 `mcp.servers.openspace` 从 stdio 模式改为 SSE 模式：
+
+```json
+"mcp": {
+  "servers": {
+    "openspace": {
+      "enabled": true,
+      "transport": "sse",
+      "url": "http://127.0.0.1:8081/sse",
+      "toolTimeout": 3600
+    }
+  }
+}
+```
+
+> [!tip] 字段说明
+> - `transport`: 固定为 `sse`
+> - `url`: SSE 服务地址，端口可自定义（如 8080/8081）
+> - `toolTimeout`: 单次工具调用超时（秒），建议 3600（1小时），复杂任务需要更长时间
+
+**step2: 创建 OpenClaw Hook 实现自启动**
+
+OpenClaw 支持 Hook 机制，在 agent bootstrap 时自动执行脚本。利用此机制自动拉起 OpenSpace MCP 服务。
+
+```bash
+# 创建 hook 目录
+mkdir -p ~/.openclaw/hooks/openspace-autostart
+```
+
+创建 `~/.openclaw/hooks/openspace-autostart/HOOK.md`：
+
+```markdown
+---
+name: openspace-autostart
+description: "Auto-start OpenSpace MCP server on agent bootstrap"
+metadata:
+  { "openclaw": { "emoji": "🌐", "events": ["agent:bootstrap"], "requires": {} } }
+---
+
+# OpenSpace Auto-Start
+
+Starts openspace-mcp SSE server in background on agent bootstrap.
+Transport: SSE on 127.0.0.1:8081
+```
+
+创建 `~/.openclaw/hooks/openspace-autostart/handler.ts`：
+
+```typescript
+const handler = async (event: any) => {
+  if (event.type !== "agent:bootstrap") return;
+
+  const { execSync, exec } = require("child_process");
+
+  try {
+    // 检查是否已运行
+    const check = execSync("pgrep -f 'openspace-mcp' 2>/dev/null", {
+      encoding: "utf8",
+      timeout: 3000
+    }).trim();
+    if (check) {
+      console.log("[openspace-autostart] already running, pid=" + check);
+      return;
+    }
+  } catch {
+    // pgrep 返回非零 = 未找到进程，继续启动
+  }
+
+  try {
+    // 后台启动 SSE 服务
+    exec(
+      "nohup openspace-mcp --transport sse --host 127.0.0.1 --port 8081 > /home/whites/OpenSpace/logs/openspace/mcp-autostart.log 2>&1 &",
+      (err: any) => {
+        if (err) {
+          console.error("[openspace-autostart] failed:", err.message);
+        } else {
+          console.log("[openspace-autostart] started on http://127.0.0.1:8081/sse");
+        }
+      }
+    );
+  } catch (e: any) {
+    console.error("[openspace-autostart] error:", e.message);
+  }
+};
+
+export default handler;
+```
+
+**step3: 在 openclaw.json 中注册 hook**
+
+在 `hooks.internal.entries` 中添加：
+
+```json
+"hooks": {
+  "internal": {
+    "enabled": true,
+    "entries": {
+      "boot-md": { "enabled": true },
+      "openspace-autostart": { "enabled": true }
+    }
+  }
+}
+```
+
+> [!tip] 也可以手动编辑 `~/.openclaw/openclaw.json`，在 `hooks.internal.entries` 下添加条目。
+
+**step4: 确保日志目录存在**
+
+```bash
+mkdir -p /home/whites/OpenSpace/logs/openspace
+```
+
+**step5: 验证**
+
+```bash
+# 手动测试启动
+openspace-mcp --transport sse --host 127.0.0.1 --port 8081 &
+
+# 检查是否监听
+ss -tlnp | grep 8081
+
+# 检查 SSE 端点是否响应
+curl -s http://127.0.0.1:8081/sse | head -2
+# 预期输出:
+# event: endpoint
+# data: /messages/?session_id=xxx
+
+# 重启 OpenClaw gateway 测试自启动
+openclaw gateway restart
+# 等待几秒后检查
+sleep 5 && pgrep -f openspace-mcp
+```
+
+> [!caution] 注意事项
+> - SSE 模式下 `openspace-mcp` 作为常驻进程运行，占用内存约 100-200MB
+> - 端口（8081）需与 `openclaw.json` 中 `mcp.servers.openspace.url` 一致
+> - 如果需要停止 OpenSpace：`pkill -f openspace-mcp`
+> - 日志文件：`/home/whites/OpenSpace/logs/openspace/mcp-autostart.log`
+
+</font>
+
+
+
 ### <font size=2>Osidian</font>
 
 <font size=2>
