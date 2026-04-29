@@ -2,9 +2,14 @@
 tags:
   - openclaw
 created: 2026-04-02 18:19:00
+updated: 2026-04-30 05:16
 ---
 
 # <font size=4>Windows + WSL + Ubuntu + OpenClaw 本地部署</font>
+
+> [!info] 版本说明
+> 本文档基于 **OpenClaw 2026.4.22** 编写，适用于 2026.4.x 系列版本。
+> 安装前请确认最新版本：`openclaw --version`
 
 ## <font size=3>简要概述</font>
 
@@ -13,11 +18,22 @@ created: 2026-04-02 18:19:00
 > [!info] 部署思路
 > OpenClaw 的核心卖点就是"能够操作电脑文件、跑命令、整理资料",所以它设计上就是要访问文件的。但是如果让 OpenClaw 直接部署在宿主机(使用者常用的 Windows 环境)中,存在很高的安全风险,因此需要通过 WSL 进行隔离部署。
 
+**架构概览**
+
+```
+Windows 11 宿主机
+  └── WSL2 (Ubuntu 22.04)
+        ├── Node.js v22.x
+        ├── OpenClaw Gateway (127.0.0.1:18789)
+        ├── 多 Agent 系统 (main / coder / evaluator / analyst / secretary / clerk)
+        └── 可选: OpenSpace MCP, ClawMetry 等辅助工具
+```
+
 </font>
 
 ## <font size=3>部署前准备</font>
 
-### <font size=2>step1: 安装依赖</font>
+### <font size=2>step1: 安装 WSL 与系统依赖</font>
 
 <font size=2>
 
@@ -28,17 +44,14 @@ wsl --list --verbose
 # 2. 查看可安装的发行版列表
 wsl --list --online
 
-# 3. 删除 WSL 虚拟机
+# 3. 删除 WSL 虚拟机（如需重装）
 # 3.1 先关闭 WSL
 wsl --shutdown
 
 # 3.2 卸载(删除)指定发行版
 wsl --unregister Ubuntu-22.04
 
-# 4. 查看可用的 Ubuntu 版本
-wsl --list --online
-
-# 4.1 安装特定版本(例如 Ubuntu 22.04)
+# 4. 安装特定版本(例如 Ubuntu 22.04)
 wsl --install -d Ubuntu-22.04
 
 # 5. 设置 Ubuntu 为默认打开
@@ -61,41 +74,54 @@ npm --version
 
 </font>
 
-### <font size=2>step2: 一键安装</font>
+### <font size=2>step2: 安装 OpenClaw CLI</font>
 
 <font size=2>
 
 ```bash
-# 推荐安装方式:一键脚本
+# 一键安装（推荐）
 curl -fsSL https://openclaw.ai/install.sh | bash
-```
 
-</font>
+# 如果一键安装失败，手动安装：
+# npm install -g openclaw
 
-### <font size=2>step3: 安装 OpenClaw CLI</font>
-
-<font size=2>
-
-```bash
-# 1. 重新安装 OpenClaw CLI
-c
-
-# 2. 修复 PATH
-# 2.1 先查看 npm 全局安装位置
+# 修复 PATH（确保 openclaw 命令可用）
+# 1. 查看 npm 全局安装位置
 npm config get prefix
 
-# 2.2 自动适配 prefix
+# 2. 自动适配 prefix 添加到 PATH
 echo 'export PATH="$(npm config get prefix)/bin:$PATH"' >> ~/.bashrc
 
-# 3. 重启
+# 3. 使配置生效
 source ~/.bashrc
 hash -r
 
-# 4. 验证
-openclaw --version
+# 4. 验证安装
+openclaw --version   # 应显示如: OpenClaw 2026.4.22
 
 # 5. 启动网关
 openclaw gateway start
+```
+
+> [!tip] 安装后首次配置
+> 安装完成后建议运行 `openclaw onboard` 进入交互式向导，自动完成基础配置。
+> 向导会引导你设置 provider API key、channel 等核心项。
+
+</font>
+
+### <font size=2>step3: 验证网关状态</font>
+
+<font size=2>
+
+```bash
+# 检查网关运行状态
+openclaw gateway status
+
+# 检查整体状态
+openclaw status
+
+# 访问控制面板
+# 浏览器打开: http://127.0.0.1:18789/
 ```
 
 </font>
@@ -119,8 +145,9 @@ sudo nano /etc/wsl.conf
 [boot]
 systemd=true
 
+# 注意: user 改为你的 WSL 用户名（可通过 whoami 查看）
 [user]
-default=nights
+default=whites
 
 [automount]
 enabled=true
@@ -132,39 +159,134 @@ enabled=true
 appendWindowsPath=true
 ```
 
+> [!caution] 注意
+> `default=whites` 需要替换为你自己 WSL 中的实际用户名。可通过 `whoami` 命令查看。
+> 修改后需重启 WSL 生效：`wsl --shutdown` 然后重新打开。
+
 </font>
 
-#### <font size=2>step2: 修改 openclaw.json 文件</font>
+#### <font size=2>step2: 配置 openclaw.json</font>
 
 <font size=2>
 
-> [!tip] 配置说明
-> 以下为核心配置项说明,根据实际环境修改对应字段。
+> [!tip] 配置文件位置
+> `~/.openclaw/openclaw.json`
+> 可通过 `openclaw config file` 查看完整路径。
 
-```json
+**以下为 2026.4.22 版本的完整配置示例，按模块说明：**
+
+#### 2.1 核心代理配置 (agents)
+
+```jsonc
 {
   "agents": {
     "defaults": {
       "workspace": "/home/whites/.openclaw/workspace",
-      "sandbox": {
-        "mode": "off"                                 
-      },
-      "models": {
-        "openrouter/auto": {
-          "alias": "OpenRouter"
+      "sandbox": { "mode": "off" },
+
+      // 记忆搜索（向量检索）
+      "memorySearch": {
+        "enabled": true,
+        "provider": "openai",
+        "model": "embedding-3",
+        "remote": {
+          "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+          "apiKey": "<你的智谱API Key>"
         },
-        "openrouter/xiaomi/mimo-v2-pro": {}
+        "cache": { "enabled": true }
       },
-      "model": {
-        "primary": "openrouter/xiaomi/mimo-v2-pro"
+
+      // 可用模型列表（别名映射）
+      "models": {
+        "xiaomi/mimo-v2-omni": { "alias": "mimo-v2-omni" },
+        "xiaomi/mimo-v2-pro": { "alias": "mimo-v2-pro" },
+        "zai/glm-4.1v-thinking-flashx": { "alias": "GLM-4.1V-Thinking-FlashX" },
+        "moonshot/kimi-2.5": { "alias": "Kimi-2.5" },
+        "openrouter/xiaomi/mimo-v2-pro": { "alias": "openrouter/xiaomi/mimo-v2-pro" },
+        "x-ai/grok-4.1-fast": { "alias": "x-ai/grok-4.1-fast" }
+      },
+
+      "subagents": { "maxConcurrent": 5 },
+
+      // 默认主模型
+      "model": { "primary": "xiaomi/mimo-v2-pro" }
+    },
+
+    // 多 Agent 定义（2026.4.x 新结构）
+    "list": [
+      {
+        "id": "main",
+        "default": true,
+        "name": "Main Coordinator",
+        "workspace": "/home/whites/.openclaw/workspace",
+        "model": {
+          "primary": "xiaomi/mimo-v2-pro",
+          "fallbacks": ["x-ai/grok-4.1-fast", "moonshot/kimi-2.5"]
+        },
+        "subagents": {
+          "allowAgents": ["secretary", "coder", "evaluator", "analyst"]
+        }
+      },
+      {
+        "id": "secretary",
+        "name": "Secretary",
+        "workspace": "/home/whites/.openclaw/workspace/agents/secretary",
+        "model": {
+          "primary": "x-ai/grok-4.1-fast",
+          "fallbacks": ["xiaomi/mimo-v2-pro", "moonshot/kimi-2.5"]
+        },
+        "tools": {
+          "allow": ["calendar", "email", "reminder", "web_search", "read", "write", "exec"],
+          "deny": ["agentToAgent", "sessions_send", "sessions_spawn", "code_exec", "git", "finance_api"],
+          "exec": { "security": "full" },
+          "fs": { "workspaceOnly": false }
+        }
+      },
+      {
+        "id": "coder",
+        "name": "Coder",
+        "workspace": "/home/whites/.openclaw/workspace/agents/coder",
+        "model": {
+          "primary": "openrouter/xiaomi/mimo-v2-pro",
+          "fallbacks": ["x-ai/grok-4.1-fast", "xiaomi/mimo-v2-pro", "moonshot/kimi-2.5"]
+        }
+      },
+      {
+        "id": "evaluator",
+        "name": "Evaluator",
+        "workspace": "/home/whites/.openclaw/workspace/agents/evaluator",
+        "model": {
+          "primary": "moonshot/kimi-2.5",
+          "fallbacks": ["xiaomi/mimo-v2-pro"]
+        }
+      },
+      {
+        "id": "analyst",
+        "name": "Analyst",
+        "workspace": "/home/whites/.openclaw/workspace/agents/analyst",
+        "model": {
+          "primary": "xiaomi/mimo-v2-omni",
+          "fallbacks": ["moonshot/kimi-2.5", "xiaomi/mimo-v2-pro"]
+        }
       }
-    }
-  },
+    ]
+  }
+}
+```
+
+> [!info] agents.list 是 2026.4.x 的新结构
+> 旧版本使用 `agents.defaults` 集中配置，2026.4.x 支持通过 `agents.list` 定义多个独立 Agent，
+> 每个 Agent 可以有独立的 workspace、model、tools 权限和 fallback 链。
+
+#### 2.2 网关配置 (gateway)
+
+```jsonc
+{
   "gateway": {
     "mode": "local",
     "auth": {
       "mode": "token",
-      "token": "your-token-here"
+      "token": "<自动生成的token，首次 onboard 后生成>"
     },
     "port": 18789,
     "bind": "loopback",
@@ -173,30 +295,31 @@ appendWindowsPath=true
       "resetOnExit": false
     },
     "controlUi": {
-      "allowInsecureAuth": true
+      "allowInsecureAuth": false
     },
     "nodes": {
       "denyCommands": [
-        "camera.snap",
-        "camera.clip",
+        "camera.snap", "camera.clip", "camera.list",
         "screen.record",
-        "contacts.add",
-        "calendar.add",
-        "reminders.add",
-        "sms.send",
-        "sms.search"
+        "contacts.add", "calendar.add", "reminders.add", "reminders.list",
+        "sms.send", "sms.search"
       ]
     }
-  },
-  "session": {
-    "dmScope": "per-channel-peer"
-  },
+  }
+}
+```
+
+#### 2.3 工具与执行配置 (tools)
+
+```jsonc
+{
   "tools": {
     "profile": "full",
+    "allow": ["*"],
     "exec": {
-      "host": "gateway",                    // 关键!必须改成 gateway 才能访问 K 盘
-      "security": "full",                   // 完全权限
-      "ask": "off"                          // 先关闭审批,测试成功后再改成 "on"
+      "host": "gateway",           // 关键! gateway 模式可访问 Windows 挂载盘
+      "security": "full",          // 完全权限（生产环境建议改为 allowlist）
+      "ask": "off"                 // 关闭审批（调试期），稳定后改为 "on"
     },
     "web": {
       "search": {
@@ -208,60 +331,224 @@ appendWindowsPath=true
         "model": "grok-4-1-fast"
       }
     }
-  },
+  }
+}
+```
+
+#### 2.4 认证与模型供应商 (auth + models)
+
+```jsonc
+{
   "auth": {
     "profiles": {
-      "openrouter:default": {
-        "provider": "openrouter",
-        "mode": "api_key"
-      }
+      "openrouter:default": { "provider": "openrouter", "mode": "api_key" },
+      "moonshot:default":   { "provider": "moonshot",   "mode": "api_key" },
+      "xiaomi:default":     { "provider": "xiaomi",     "mode": "api_key" },
+      "zai:default":        { "provider": "zai",        "mode": "api_key" }
     }
   },
+
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "moonshot": {
+        "baseUrl": "https://api.moonshot.cn/v1",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "kimi-k2.5",
+            "name": "Kimi K2.5",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "contextWindow": 262144,
+            "maxTokens": 262144
+          }
+        ]
+      },
+      "xiaomi": {
+        "baseUrl": "https://api.xiaomimimo.com/v1",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "mimo-v2-flash",
+            "name": "Xiaomi MiMo V2 Flash",
+            "reasoning": true,
+            "input": ["text"],
+            "contextWindow": 262144,
+            "maxTokens": 8192
+          },
+          {
+            "id": "mimo-v2-pro",
+            "name": "Xiaomi MiMo V2 Pro",
+            "reasoning": true,
+            "input": ["text"],
+            "contextWindow": 1048576,
+            "maxTokens": 32000
+          },
+          {
+            "id": "mimo-v2-omni",
+            "name": "Xiaomi MiMo V2 Omni",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 262144,
+            "maxTokens": 32000
+          }
+        ]
+      },
+      "zai": {
+        "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "glm-4.7-flashx",
+            "name": "GLM-4.7 FlashX",
+            "reasoning": true,
+            "input": ["text"],
+            "contextWindow": 200000,
+            "maxTokens": 128000
+          },
+          {
+            "id": "glm-4.6v",
+            "name": "GLM-4.6V",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 128000,
+            "maxTokens": 32768
+          }
+        ]
+      }
+    }
+  }
+}
+```
+
+> [!tip] 模型供应商说明
+> - **xiaomi**: 小米 MiMo 系列，国内免费额度，适合日常使用
+> - **moonshot**: 月之暗面 Kimi 系列，长上下文
+> - **zai (智谱)**: GLM 系列，同时提供 embedding 模型用于记忆搜索
+> - **openrouter**: 聚合路由，可访问多家模型（需要余额）
+> - **x-ai**: Grok 系列，用于 web search 和 x_search
+
+#### 2.5 频道配置 (channels)
+
+```jsonc
+{
   "channels": {
     "feishu": {
       "enabled": true,
-      "appId": "your-app-id",
-      "appSecret": "your-app-secret",
+      "appId": "<飞书应用 App ID>",
+      "appSecret": "<飞书应用 App Secret>",
       "connectionMode": "websocket",
       "domain": "feishu",
-      "groupPolicy": "open"
-    }
-  },
-  "plugins": {
-    "entries": {
-      "xai": {
-        "enabled": true,
-        "config": {
-          "webSearch": {
-            "apiKey": "your-xai-api-key"
-          }
-        }
+      "groupPolicy": "allowlist"          // allowlist | open | closed
+    },
+    "telegram": {
+      "enabled": true,
+      "groups": {
+        "*": { "requireMention": true }
       },
-      "feishu": {
-        "enabled": true
-      }
+      "botToken": "<Telegram Bot Token>"
+    },
+    "qqbot": {
+      "enabled": false,
+      "allowFrom": ["*"],
+      "appId": "<QQ Bot App ID>",
+      "clientSecret": "<QQ Bot Client Secret>"
     }
-  },
-  "wizard": {
-    "lastRunAt": "2026-04-02T09:39:39.148Z",
-    "lastRunVersion": "2026.4.1",
-    "lastRunCommand": "onboard",
-    "lastRunMode": "local"
-  },
-  "meta": {
-    "lastTouchedVersion": "2026.4.1",
-    "lastTouchedAt": "2026-04-02T09:39:40.775Z"
   }
 }
 ```
 
 > [!caution] 安全提醒
-> `token`、`appSecret`、`apiKey` 等敏感字段请替换为自己的值,不要直接使用示例中的占位符。
+> `token`、`appSecret`、`botToken`、`apiKey` 等敏感字段请替换为自己的值，不要直接使用示例中的占位符。
+> 也不要将包含真实密钥的配置文件提交到 Git 仓库。
 
 </font>
 
+#### 2.6 插件与 Hooks (plugins + hooks)
 
+<font size=2>
 
+```jsonc
+{
+  "plugins": {
+    "entries": {
+      "xai": {
+        "enabled": true,
+        "config": {
+          "webSearch": { "apiKey": "<xAI API Key>" },
+          "xSearch": { "enabled": true, "model": "grok-4-1-fast" }
+        }
+      },
+      "feishu": { "enabled": true },
+      "xiaomi": { "enabled": true },
+      "openrouter": { "enabled": true },
+      "moonshot": { "enabled": true },
+      "memory-core": {
+        "config": {
+          "dreaming": { "enabled": true }
+        }
+      },
+      "zai": { "enabled": true }
+    }
+  },
+
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "boot-md": { "enabled": true },
+        "bootstrap-extra-files": { "enabled": true },
+        "command-logger": { "enabled": true },
+        "session-memory": { "enabled": true }
+      }
+    }
+  },
+
+  "skills": {
+    "load": {
+      "extraDirs": ["/home/whites/.openclaw/workspace/skills"]
+    }
+  },
+
+  "bindings": [
+    {
+      "type": "route",
+      "agentId": "main",
+      "match": { "channel": "feishu" }
+    },
+    {
+      "type": "route",
+      "agentId": "secretary",
+      "match": { "channel": "telegram" }
+    }
+  ]
+}
+```
+
+> [!info] 新增配置模块说明（2026.4.x）
+> - **plugins**: 各供应商插件 + memory-core（记忆/梦境功能）
+> - **hooks**: 内部钩子，agent bootstrap 时自动执行（如 session-memory 自动加载记忆）
+> - **skills**: 额外技能目录，Agent 可自动发现并使用
+> - **bindings**: 路由绑定，指定哪个 channel 的消息路由到哪个 Agent
+
+</font>
+
+#### 2.7 Session 配置
+
+<font size=2>
+
+```jsonc
+{
+  "session": {
+    "dmScope": "per-channel-peer"   // 每个 channel+用户 对应独立会话
+  }
+}
+```
+
+</font>
+
+---
 
 ## <font size=3>安装辅助工具</font>
 
@@ -275,7 +562,7 @@ ClawMetry 是专为 OpenClaw 设计的开源实时监控面板。
 # 安装
 pipx install clawmetry
 
-# 檢查 clawmetry 是否真的裝好
+# 检查 clawmetry 是否真的装好
 ls ~/.local/bin/clawmetry
 
 # 把 ~/.local/bin 加到 PATH
@@ -288,73 +575,64 @@ clawmetry
 
 ![step1](./images/openclaw-widnows-5.png)
 
-区别于 `Windos + Docker Desktop + WSL + Ubuntu 本地部署.md` 的描述的配置方法, 由于不是在docker中进行的部署,执行 pip install clawmetry 会报错,Python 环境被系统标记为 externally-managed-environment(PEP 668 保护机制),不允许直接用 pip 修改系统 Python。
+区别于 `Windows Docker Desktop+WSL+Ubuntu本地部署.md` 描述的配置方法，由于不是在 Docker 中进行的部署，执行 `pip install clawmetry` 会报错，Python 环境被系统标记为 `externally-managed-environment`（PEP 668 保护机制），不允许直接用 pip 修改系统 Python。
 
-**通俗解释:** 从 Python 3.11 开始,系统自带的 Python(通过 apt install python3 安装的)被标记为 "由系统外部管理"。意思就是,操作系统(apt)才是这个 Python 的"主人",不允许直接用 pip install 随意安装或升级包。如果直接执行 pip install xxx,系统就会抛出这个错误:
+**通俗解释:** 从 Python 3.11 开始，系统自带的 Python（通过 apt install python3 安装的）被标记为"由系统外部管理"。意思就是，操作系统（apt）才是这个 Python 的"主人"，不允许直接用 pip install 随意安装或升级包。如果直接执行 `pip install xxx`，系统就会抛出这个错误：
 
 ```bash
 error: externally-managed-environment
 × This environment is externally managed
 ```
 
-**解释原因:**
-- 防止用 pip 安装的包和系统 apt 安装的包发生冲突(导致系统工具坏掉)
-- 避免升级某个包时把系统自带的 Python 工具(比如 python3-pip、python3-apt 等)搞坏
+**解决办法:** 使用 `pipx` 代替 `pip`，它会为每个工具创建独立的虚拟环境。
 
 </font>
-
-
----
 
 ### <font size=2>Karpathy LLM 知识库</font>
 
 <font size=2>
 
-Karpathy LLM Skill（也常称为 Karpathy LLM Wiki 或 Karpathy-style LLM Knowledge Base）并不是一个单一的软件包，而是一个模式（pattern） + 可安装的 Agent Skill。它的核心想法是：让 LLM（尤其是 Claude Code、Cursor、OpenClaw 等）自动把你的原始资料（文章、论文、图片等）编译成一个结构化的 Markdown Wiki（知识库），并持续维护、链接、更新它。人类只负责扔原始资料和提问，LLM 负责整理和合成知识。
+Karpathy LLM Skill（也常称为 Karpathy LLM Wiki 或 Karpathy-style LLM Knowledge Base）并不是一个单一的软件包，而是一个模式（pattern）+ 可安装的 Agent Skill。它的核心想法是：让 LLM（尤其是 Claude Code、Cursor、OpenClaw 等）自动把你的原始资料（文章、论文、图片等）编译成一个结构化的 Markdown Wiki（知识库），并持续维护、链接、更新它。人类只负责扔原始资料和提问，LLM 负责整理和合成知识。
 
-这里我们运用他的核心思想来搭建自己的私人知识库，建议针对不同的领域，创建不同的 Vault.
+这里我们运用他的核心思想来搭建自己的私人知识库，建议针对不同的领域，创建不同的 Vault。
 
 ```bash
-# 这里假设我要创建 嵌入式 和 AI 两个领域的知识库，按照如下目录结构创建，如果要创建更多，则再新增子知识库即可
+# 目录结构示例
 
-~/Knowledge-LLM-Wiki/                 ← 所有知识库的统一父目录（推荐）
-├── embedded/                         ← 嵌入式系统知识库（独立一个 wiki）
-│   ├── raw/                          ← 只放嵌入式相关的原始资料（文章、论文、芯片手册、代码等）
-│   │   └── assets/                   ← 可选：存放图片、PDF附件等
-│   └── wiki/                         ← LLM 只维护这个目录
-│       ├── schema.md                 ← 嵌入式专用的规则文件
-│       ├── index.md                  ← LLM 自动生成的总索引
-│       ├── concepts/                 ← 概念页（如 rt-os.md、stm32.md）
-│       ├── devices/                  ← 硬件设备页
-│       ├── protocols/                ← 协议页
-│       └── summaries/                ← 单个 raw 文件的总结页（可选）
+~/Knowledge-LLM-Wiki/                 ← 所有知识库的统一父目录
+├── embedded/                         ← 嵌入式系统知识库
+│   ├── raw/                          ← 原始资料
+│   │   └── assets/                   ← 图片、PDF附件等
+│   └── wiki/                         ← LLM 维护的结构化知识
+│       ├── schema.md                 ← 规则文件
+│       ├── index.md                  ← 总索引
+│       ├── concepts/
+│       ├── devices/
+│       ├── protocols/
+│       └── summaries/
 │
-└── ai/                               ← AI / LLM 知识库（另一个独立 wiki）
-    ├── raw/                          ← 只放 AI 相关的原始资料
+└── ai/                               ← AI / LLM 知识库
+    ├── raw/
     │   └── assets/
     └── wiki/
-        ├── schema.md                 ← AI 专用的规则文件
+        ├── schema.md
         ├── index.md
-        ├── concepts/                 ← 如 transformer.md、agent.md
-        ├── models/                   ← 模型相关页
-        ├── techniques/               ← Prompt Engineering、RAG 等
+        ├── concepts/
+        ├── models/
+        ├── techniques/
         └── summaries/
-
 ```
-接下来根据自己的需求，去完善目录中所需的文件内容。
 
-**skill**
+**Skill 配置**
 
-创建的这个本地知识库（~/Knowledge-LLM-Wiki/embedded/ 和 ~/Knowledge-LLM-Wiki/ai/）是纯 Markdown 文件，本身不是 Skill。
-而 skills/ 文件夹（OpenClaw 的技能目录）的作用是存放 Agent Skill（让你的 Agent 知道如何使用、管理这些知识库的指令集）。
-
+知识库目录是纯 Markdown 文件，而 OpenClaw 需要通过 Skill 来知道如何使用和管理它们。
 
 ```bash
-# 推荐结构如下（放在 OpenClaw 的 skills 目录下）：
+# Skill 目录结构（放在 OpenClaw 的 skills 目录下）
 ~/.openclaw/workspace/skills/
 ├── llm-wiki-embedded/           ← 嵌入式知识库专用 Skill
-│   ├── SKILL.md                 ← 核心文件（最重要）
-│   └── README.md                ← 可选，说明
+│   ├── SKILL.md                 ← 核心文件
+│   └── README.md
 │
 └── llm-wiki-ai/                 ← AI 知识库专用 Skill
     ├── SKILL.md
@@ -362,10 +640,6 @@ Karpathy LLM Skill（也常称为 Karpathy LLM Wiki 或 Karpathy-style LLM Knowl
 ```
 
 </font>
-
-
----
-
 
 ### <font size=2>OpenSpace</font>
 
@@ -390,35 +664,18 @@ pipx install -e .
 openspace-mcp --help
 ```
 
-**使用途径1**
+**使用途径 1：MCP 集成**
 
-在 openclaw.json 中添加如下字段配置，让 OpenClaw 能“看到”并使用 OpenSpace 的工具，并实现 Agent 的“自我进化”能力。
+在 `openclaw.json` 中添加 MCP 配置，让 OpenClaw 能"看到"并使用 OpenSpace 的工具。
 
-```bash
-"mcp": {
-  "servers": {
-    "openspace": {
-      "command": "openspace-mcp",
-      "toolTimeout": 600,
-      "env": {
-        "OPENSPACE_HOST_SKILL_DIRS": "/home/whites/.openclaw/workspace/skills",
-        "OPENSPACE_WORKSPACE": "/home/whites/OpenSpace"
-      }
-    }
-  }
-}
-```
-
-**使用途径2**
+**使用途径 2：直接使用工具**
 
 OpenSpace 提供了几个强大工具，例如：
-
 - `execute_task`（执行复杂多步任务）
 - `delegate-task`（任务委派）
 - `skill-discovery`（技能发现与演化）
 
-
-**启动后端(手动)**
+**启动后端（手动）**
 
 ```bash
 openspace-dashboard --port 7788 --host 127.0.0.1
@@ -427,10 +684,9 @@ openspace-dashboard --port 7788 --host 127.0.0.1
 Running on http://127.0.0.1:7788
 ```
 
-**启动前端(手动)**
+**启动前端（手动）**
 
 ```bash
-# 进入到这个路径
 cd ~/OpenSpace/frontend
 
 # 如果是第一次启动，需要安装依赖（只需执行一次）
@@ -440,7 +696,7 @@ npm install
 npm run dev -- --host 127.0.0.1 --port 3789
 ```
 
-**启动前后端(自动)**
+**启动前后端（自动脚本）**
 
 ```bash
 #!/usr/bin/env bash
@@ -471,7 +727,6 @@ if ss -tlnn | grep -q ":3789 "; then
   echo "✅ Frontend already running on port 3789"
 else
   cd "$FRONTEND_DIR"
-  # 确保依赖已安装
   npm ci >"$LOG_DIR/npm-install.log" 2>&1 || {
     echo "❌ npm dependencies 安装失败，查看 $LOG_DIR/npm-install.log"
     exit 1
@@ -489,8 +744,6 @@ echo "访问地址: http://127.0.0.1:3789"
 
 </font>
 
-
-
 ### <font size=2>OpenSpace MCP 自启动配置（SSE 模式）</font>
 
 <font size=2>
@@ -501,16 +754,16 @@ echo "访问地址: http://127.0.0.1:3789"
 
 **step1: 修改 openclaw.json 中的 MCP 配置**
 
-将 `mcp.servers.openspace` 从 stdio 模式改为 SSE 模式：
-
 ```json
-"mcp": {
-  "servers": {
-    "openspace": {
-      "enabled": true,
-      "transport": "sse",
-      "url": "http://127.0.0.1:8081/sse",
-      "toolTimeout": 3600
+{
+  "mcp": {
+    "servers": {
+      "openspace": {
+        "enabled": true,
+        "transport": "sse",
+        "url": "http://127.0.0.1:8081/sse",
+        "toolTimeout": 3600
+      }
     }
   }
 }
@@ -522,8 +775,6 @@ echo "访问地址: http://127.0.0.1:3789"
 > - `toolTimeout`: 单次工具调用超时（秒），建议 3600（1小时），复杂任务需要更长时间
 
 **step2: 创建 OpenClaw Hook 实现自启动**
-
-OpenClaw 支持 Hook 机制，在 agent bootstrap 时自动执行脚本。利用此机制自动拉起 OpenSpace MCP 服务。
 
 ```bash
 # 创建 hook 目录
@@ -555,7 +806,6 @@ const handler = async (event: any) => {
   const { execSync, exec } = require("child_process");
 
   try {
-    // 检查是否已运行
     const check = execSync("pgrep -f 'openspace-mcp' 2>/dev/null", {
       encoding: "utf8",
       timeout: 3000
@@ -569,7 +819,6 @@ const handler = async (event: any) => {
   }
 
   try {
-    // 后台启动 SSE 服务
     exec(
       "nohup openspace-mcp --transport sse --host 127.0.0.1 --port 8081 > /home/whites/OpenSpace/logs/openspace/mcp-autostart.log 2>&1 &",
       (err: any) => {
@@ -590,21 +839,19 @@ export default handler;
 
 **step3: 在 openclaw.json 中注册 hook**
 
-在 `hooks.internal.entries` 中添加：
-
 ```json
-"hooks": {
-  "internal": {
-    "enabled": true,
-    "entries": {
-      "boot-md": { "enabled": true },
-      "openspace-autostart": { "enabled": true }
+{
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "entries": {
+        "boot-md": { "enabled": true },
+        "openspace-autostart": { "enabled": true }
+      }
     }
   }
 }
 ```
-
-> [!tip] 也可以手动编辑 `~/.openclaw/openclaw.json`，在 `hooks.internal.entries` 下添加条目。
 
 **step4: 确保日志目录存在**
 
@@ -641,12 +888,81 @@ sleep 5 && pgrep -f openspace-mcp
 
 </font>
 
-
-
-### <font size=2>Osidian</font>
+### <font size=2>Obsidian</font>
 
 <font size=2>
 
+Obsidian 作为本地 Markdown 知识库编辑器，配合 OpenClaw 使用。
 
+- **用途**：编辑和查看 Karpathy LLM Wiki 知识库、OpenClaw 部署笔记等
+- **安装**：在 Windows 侧安装 Obsidian 客户端，打开 WSL 挂载的目录（如 `\\wsl$\Ubuntu-22.04\home\whites\Knowledge-LLM-Wiki\`）
+- **与 WSL 的交互**：通过 `/mnt/i/` 等挂载路径，OpenClaw Agent 可直接读写 Obsidian Vault 中的文件
+
+</font>
+
+---
+
+## <font size=3>常用运维命令速查</font>
+
+<font size=2>
+
+```bash
+# === 网关管理 ===
+openclaw gateway start       # 启动网关
+openclaw gateway stop        # 停止网关
+openclaw gateway restart     # 重启网关
+openclaw gateway status      # 查看网关状态
+
+# === 状态检查 ===
+openclaw status              # 整体状态概览
+openclaw status --deep       # 深度检查（含 channel 测试）
+openclaw doctor              # 健康检查 + 快速修复
+
+# === 日志查看 ===
+openclaw logs --follow       # 实时跟踪日志
+openclaw logs --lines 100    # 查看最近 100 行
+
+# === 配置管理 ===
+openclaw config file         # 显示配置文件路径
+openclaw config validate     # 验证配置语法
+openclaw configure           # 交互式配置向导
+
+# === 更新 ===
+openclaw update              # 更新到最新版本
+npm update -g openclaw       # 备用更新方式
+
+# === 记忆管理 ===
+openclaw memory              # 搜索和检查记忆
+
+# === Cron 任务 ===
+openclaw cron list           # 查看定时任务
+openclaw cron logs           # 查看任务执行日志
+```
+
+</font>
+
+---
+
+## <font size=3>版本兼容性说明（2026.4.x 系列）</font>
+
+<font size=2>
+
+| 特性 | 2026.4.1 | 2026.4.22 | 说明 |
+|------|----------|-----------|------|
+| `agents.list` 多 Agent | ✅ | ✅ | 2026.4.x 新增，每个 Agent 独立配置 |
+| `models.providers` 自定义供应商 | ✅ | ✅ | 支持 xiaomi/moonshot/zai 等 |
+| `memorySearch` 向量检索 | ✅ | ✅ | 支持 openai 兼容 embedding |
+| `hooks.internal` 内部钩子 | ✅ | ✅ | session-memory, boot-md 等 |
+| `mcp.servers` MCP 集成 | ✅ | ✅ | 支持 stdio / sse 两种模式 |
+| `skills.load.extraDirs` | ✅ | ✅ | 额外技能目录 |
+| `bindings` 路由绑定 | ✅ | ✅ | 按 channel 路由到不同 Agent |
+| `plugins.entries` | ✅ | ✅ | 各供应商 + memory-core 插件 |
+| `tools.exec.host: "gateway"` | ✅ | ✅ | gateway 模式可访问挂载盘 |
+| `wizard` 自动配置记录 | ✅ | ✅ | 自动维护，无需手动设置 |
+
+> [!tip] 升级提示
+> 从旧版本升级到 2026.4.22：`npm update -g openclaw` 或 `openclaw update`
+> 升级后建议运行 `openclaw onboard` 重新完成向导配置。
+> 配置文件结构向下兼容，旧配置通常无需修改即可运行。
 
 </font>
