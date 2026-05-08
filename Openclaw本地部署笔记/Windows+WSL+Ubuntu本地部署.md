@@ -2,7 +2,7 @@
 tags:
   - openclaw
 created: 2026-04-02 18:19:00
-updated: 2026-04-30 05:16
+updated: 2026-05-09 07:00
 ---
 
 # <font size=4>Windows + WSL + Ubuntu + OpenClaw 本地部署</font>
@@ -26,7 +26,8 @@ Windows 11 宿主机
         ├── Node.js v22.x
         ├── OpenClaw Gateway (127.0.0.1:18789)
         ├── 多 Agent 系统 (main / coder / evaluator / analyst / secretary / clerk)
-        └── 可选: OpenSpace MCP, ClawMetry 等辅助工具
+        ├── OpenSpace MCP (systemd user service, SSE on :8081)
+        └── 可选: ClawMetry 等辅助工具
 ```
 
 </font>
@@ -500,7 +501,8 @@ appendWindowsPath=true
         "boot-md": { "enabled": true },
         "bootstrap-extra-files": { "enabled": true },
         "command-logger": { "enabled": true },
-        "session-memory": { "enabled": true }
+        "session-memory": { "enabled": true },
+        "openspace-autostart": { "enabled": false }    // 已由 systemd user service 管理，hook 禁用
       }
     }
   },
@@ -529,6 +531,7 @@ appendWindowsPath=true
 > [!info] 新增配置模块说明（2026.4.x）
 > - **plugins**: 各供应商插件 + memory-core（记忆/梦境功能）
 > - **hooks**: 内部钩子，agent bootstrap 时自动执行（如 session-memory 自动加载记忆）
+>   - `openspace-autostart` hook 已禁用，OpenSpace MCP 由 systemd user service 管理（更可靠，支持崩溃重启）
 > - **skills**: 额外技能目录，Agent 可自动发现并使用
 > - **bindings**: 路由绑定，指定哪个 channel 的消息路由到哪个 Agent
 
@@ -744,13 +747,14 @@ echo "访问地址: http://127.0.0.1:3789"
 
 </font>
 
-### <font size=2>OpenSpace MCP 自启动配置（SSE 模式）</font>
+### <font size=2>OpenSpace MCP 自启动配置（SSE 模式 + systemd）</font>
 
 <font size=2>
 
 > [!info] 背景说明
 > 默认的 `command: "openspace-mcp"` 使用 stdio 模式，每次调用时启动进程，存在超时和冷启动问题。
 > 推荐使用 SSE 模式：OpenSpace 作为常驻后台服务运行，OpenClaw 通过 HTTP 连接，无冷启动开销。
+> 自启动方式采用 **systemd user service**（而非 OpenClaw hook），更可靠、支持开机自启和崩溃重启。
 
 **step1: 修改 openclaw.json 中的 MCP 配置**
 
@@ -774,96 +778,63 @@ echo "访问地址: http://127.0.0.1:3789"
 > - `url`: SSE 服务地址，端口可自定义（如 8080/8081）
 > - `toolTimeout`: 单次工具调用超时（秒），建议 3600（1小时），复杂任务需要更长时间
 
-**step2: 创建 OpenClaw Hook 实现自启动**
+**step2: 创建 systemd user service**
 
 ```bash
-# 创建 hook 目录
-mkdir -p ~/.openclaw/hooks/openspace-autostart
-```
-
-创建 `~/.openclaw/hooks/openspace-autostart/HOOK.md`：
-
-```markdown
----
-name: openspace-autostart
-description: "Auto-start OpenSpace MCP server on agent bootstrap"
-metadata:
-  { "openclaw": { "emoji": "🌐", "events": ["agent:bootstrap"], "requires": {} } }
----
-
-# OpenSpace Auto-Start
-
-Starts openspace-mcp SSE server in background on agent bootstrap.
-Transport: SSE on 127.0.0.1:8081
-```
-
-创建 `~/.openclaw/hooks/openspace-autostart/handler.ts`：
-
-```typescript
-const handler = async (event: any) => {
-  if (event.type !== "agent:bootstrap") return;
-
-  const { execSync, exec } = require("child_process");
-
-  try {
-    const check = execSync("pgrep -f 'openspace-mcp' 2>/dev/null", {
-      encoding: "utf8",
-      timeout: 3000
-    }).trim();
-    if (check) {
-      console.log("[openspace-autostart] already running, pid=" + check);
-      return;
-    }
-  } catch {
-    // pgrep 返回非零 = 未找到进程，继续启动
-  }
-
-  try {
-    exec(
-      "nohup openspace-mcp --transport sse --host 127.0.0.1 --port 8081 > /home/whites/OpenSpace/logs/openspace/mcp-autostart.log 2>&1 &",
-      (err: any) => {
-        if (err) {
-          console.error("[openspace-autostart] failed:", err.message);
-        } else {
-          console.log("[openspace-autostart] started on http://127.0.0.1:8081/sse");
-        }
-      }
-    );
-  } catch (e: any) {
-    console.error("[openspace-autostart] error:", e.message);
-  }
-};
-
-export default handler;
-```
-
-**step3: 在 openclaw.json 中注册 hook**
-
-```json
-{
-  "hooks": {
-    "internal": {
-      "enabled": true,
-      "entries": {
-        "boot-md": { "enabled": true },
-        "openspace-autostart": { "enabled": true }
-      }
-    }
-  }
-}
-```
-
-**step4: 确保日志目录存在**
-
-```bash
+# 确保日志目录存在
 mkdir -p /home/whites/OpenSpace/logs/openspace
+
+# 创建 service 文件
+cat > ~/.config/systemd/user/openspace-mcp.service << 'EOF'
+[Unit]
+Description=OpenSpace MCP Server (SSE on 8081)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/home/whites/.local/bin/openspace-mcp --transport sse --host 127.0.0.1 --port 8081
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/home/whites/OpenSpace/logs/openspace/mcp-service.log
+StandardError=append:/home/whites/OpenSpace/logs/openspace/mcp-service.log
+
+[Install]
+WantedBy=default.target
+EOF
 ```
 
-**step5: 验证**
+> [!tip] 字段说明
+> - `ExecStart`: 指向 openspace-mcp 的实际路径（可通过 `which openspace-mcp` 查看）
+> - `Restart=on-failure`: 崩溃后自动重启
+> - `RestartSec=5`: 重启间隔 5 秒
+> - 日志输出到文件而非 stdout，方便排查
+
+**step3: 启用并启动服务**
 
 ```bash
-# 手动测试启动
-openspace-mcp --transport sse --host 127.0.0.1 --port 8081 &
+# 重新加载 systemd 配置
+systemctl --user daemon-reload
+
+# 启用开机自启
+systemctl --user enable openspace-mcp
+
+# 立即启动
+systemctl --user start openspace-mcp
+
+# 启用 linger（确保 WSL 启动时 user service 也自动运行）
+sudo loginctl enable-linger whites
+```
+
+> [!info] WSL 中的 linger
+> WSL 默认不保持 user session，`loginctl enable-linger` 确保 systemd user service
+> 在 WSL 启动后自动运行，无需手动登录。
+
+**step4: 验证**
+
+```bash
+# 检查服务状态
+systemctl --user status openspace-mcp
 
 # 检查是否监听
 ss -tlnp | grep 8081
@@ -874,17 +845,34 @@ curl -s http://127.0.0.1:8081/sse | head -2
 # event: endpoint
 # data: /messages/?session_id=xxx
 
-# 重启 OpenClaw gateway 测试自启动
-openclaw gateway restart
-# 等待几秒后检查
-sleep 5 && pgrep -f openspace-mcp
+# 查看服务日志
+journalctl --user -u openspace-mcp --no-pager -n 20
+```
+
+**常用运维命令**
+
+```bash
+# 停止服务
+systemctl --user stop openspace-mcp
+
+# 重启服务
+systemctl --user restart openspace-mcp
+
+# 查看日志（实时跟踪）
+journalctl --user -u openspace-mcp -f
+
+# 查看日志文件
+tail -f /home/whites/OpenSpace/logs/openspace/mcp-service.log
+
+# 禁用自启
+systemctl --user disable openspace-mcp
 ```
 
 > [!caution] 注意事项
-> - SSE 模式下 `openspace-mcp` 作为常驻进程运行，占用内存约 100-200MB
+> - SSE 模式下 `openspace-mcp` 作为常驻进程运行，占用内存约 60-200MB
 > - 端口（8081）需与 `openclaw.json` 中 `mcp.servers.openspace.url` 一致
-> - 如果需要停止 OpenSpace：`pkill -f openspace-mcp`
-> - 日志文件：`/home/whites/OpenSpace/logs/openspace/mcp-autostart.log`
+> - OpenClaw hook 中的 `openspace-autostart` 应设置为 `enabled: false`（已由 systemd 管理）
+> - `ExecStart` 路径需指向实际安装位置，可通过 `which openspace-mcp` 确认
 
 </font>
 
