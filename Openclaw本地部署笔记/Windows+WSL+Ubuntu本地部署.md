@@ -2,7 +2,7 @@
 tags:
   - openclaw
 created: 2026-04-02 18:19:00
-updated: 2026-05-09 07:00
+updated: 2026-05-09 07:25
 ---
 
 # <font size=4>Windows + WSL + Ubuntu + OpenClaw 本地部署</font>
@@ -27,6 +27,7 @@ Windows 11 宿主机
         ├── OpenClaw Gateway (127.0.0.1:18789)
         ├── 多 Agent 系统 (main / coder / evaluator / analyst / secretary / clerk)
         ├── OpenSpace MCP (systemd user service, SSE on :8081)
+        ├── Codex CLI (需 OpenAI API Key)
         └── 可选: ClawMetry 等辅助工具
 ```
 
@@ -885,6 +886,37 @@ Obsidian 作为本地 Markdown 知识库编辑器，配合 OpenClaw 使用。
 - **用途**：编辑和查看 Karpathy LLM Wiki 知识库、OpenClaw 部署笔记等
 - **安装**：在 Windows 侧安装 Obsidian 客户端，打开 WSL 挂载的目录（如 `\\wsl$\Ubuntu-22.04\home\whites\Knowledge-LLM-Wiki\`）
 - **与 WSL 的交互**：通过 `/mnt/i/` 等挂载路径，OpenClaw Agent 可直接读写 Obsidian Vault 中的文件
+
+</font>
+
+### <font size=2>Codex CLI</font>
+
+<font size=2>
+
+OpenAI Codex CLI 是 OpenAI 官方终端编程智能体，可作为 OpenClaw 的 ACP 子代理使用。详细部署与配置教程见独立文档：
+
+- 📄 **[Windos+WSL+Ubuntu环境下的Codex部署与配置.md](./Windos+WSL+Ubuntu环境下的Codex部署与配置.md)**
+
+> [!important] 重要前提
+> Codex 使用 OpenAI 专有的 **Responses WebSocket 协议**（`wss://api.openai.com/v1/responses`），
+> **必须配置真实的 OpenAI API Key**。OpenRouter 等第三方聚合服务不支持此协议，无法替代。
+
+**快速安装**：
+
+```bash
+# 安装
+npm install -g @openai/codex
+
+# 配置 Key
+cat > ~/.codex/auth.json << 'EOF'
+{
+  "OPENAI_API_KEY": "sk-your-key-here"
+}
+EOF
+
+# 验证
+codex exec "say hello in one word"
+```
 
 </font>
 
