@@ -1,9 +1,9 @@
 ---
-name: rt-thread-workflow
+name: embedded-rt-thread-development
 description: |
   STM32 + RT-Thread 嵌入式代码自主化工作流
   适用于 STM32F1/F4/F7/H7/G0 等系列 + RT-Thread 最新稳定版（v5.x / v4.1.x）。
-  目标：用户提出需求 → 自动检索历史经验 → 生成可直接编译运行的完整工程代码 → 审查测试 → 交付 + 沉淀新经验。
+  目标：用户提出需求 → 结构化拆解 + 需求文档化 → 自动检索历史经验 → 生成可直接编译运行的完整工程代码 → 审查测试 → 交付 + 沉淀新经验。
 ---
 
 # RT-Thread Workflow for STM32
@@ -12,7 +12,7 @@ description: |
 
 | 步骤 | 执行者      | 目的                                   | 关键工具 / 指令                          | 输出物                  |
 |------|------------|----------------------------------------|------------------------------------------|-------------------------|
-| 1    | main       | 拆解用户需求，生成结构化任务单         | -                                        | Task Brief              |
+| 1    | main       | 拆解用户需求，生成结构化任务单 + 需求文档 | -                                        | Task Brief              |
 | 2    | clerk      | 从知识库检索 STM32/RT-Thread 相关经验 | memory_search + wiki_search              | Raw Experiences         |
 | 3    | clerk      | 将原始经验转化为结构化摘要             | code_execution（文本抽取 + Markdown）    | Structured Summary      |
 | 4    | coder      | 基于摘要生成完整、可编译的代码工程     | sessions_send → coder                    | Full Project Code       |
@@ -23,9 +23,16 @@ description: |
 ## 2. 详细工作流（自动循环执行）
 
 ### Step 0：主管拆解（你手动触发）
+接收用户模糊需求后，主管必须输出以下内容：
+1. **Task Brief**（YAML，必填）
+2. **业务逻辑需求.md**
+3. **测试用例.md**
+4. **通讯协议.md**（仅当涉及设备间或模块间通讯时创建）
+
+这些文档存放在工程根目录的 `docs/` 文件夹下，作为**活文档**持续迭代。
+
 - 接收用户需求（例如：“实现一个使用 RT-Thread 的 UART DMA 接收 + 线程间消息队列通信的 LED 闪烁项目”）
 - 输出结构化 **Task Brief**（必须包含以下字段）：
-
   ```yaml
   project_name: 
   chip: STM32F407IGT6          # 或具体型号
