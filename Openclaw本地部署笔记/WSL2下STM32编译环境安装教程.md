@@ -382,26 +382,121 @@ stm32cubeclt-cli --version
 
 ## 附录 A：WSL2 USB 设备直通
 
-烧录需要 ST-Link 通过 USB 直通到 WSL2：
+烧录需要 ST-Link 通过 USB 直通到 WSL2。问题在于 ST-Link 每次插拔的 USB 端口（busid）会变，因此需要用 **VID:PID** 方式绑定，不受端口影响。
+
+### A.1 安装 usbipd-win
 
 ```powershell
-# 在 Windows PowerShell（管理员）中执行
-
-# 1. 安装 usbipd-win
 winget install usbipd
+```
 
-# 2. 列出 USB 设备
+### A.2 首次配置：按 VID:PID 绑定（一劳永逸）
+
+```powershell
+# 1. 查看设备，记下 ST-Link 的 VID:PID
 usbipd list
+# 示例输出：
+# BUSID  VID:PID      DEVICE
+# 3-4    0483:3748    ST-Link Debug, STMicroelectronics ST-LINK/V2
+#               ↑↑↑↑:↑↑↑↑
+#               这是 VID:PID，每次插拔都一样
 
-# 3. 绑定 ST-Link 设备（VID:PID 从列表中获取）
-usbipd bind --busid <BUSID>
+# 2. 用 VID:PID 绑定（不受 busid 变化影响）
+usbipd bind --hardware-id 0483:3748
 
-# 4. 附加到 WSL
-usbipd attach --wsl --busid <BUSID>
+# 3. 附加到 WSL
+usbipd attach --wsl --hardware-id 0483:3748
 
-# 5. 在 WSL 中验证
+# 4. 在 WSL 中验证
 lsusb
-# 应看到 STMicroelectronics ST-LINK
+# 应看到：STMicroelectronics ST-LINK/V2
+```
+
+> **ST-Link 常见 VID:PID**：
+> | 型号 | VID:PID |
+> |------|---------|
+> | ST-Link/V2 | `0483:3748` |
+> | ST-Link/V2-1 (Nucleo 板载) | `0483:374b` |
+> | ST-Link/V3 | `0483:3754` |
+> | ST-Link/V3 (DFU 模式) | `0483:df11` |
+
+### A.3 设置自动附加（插上即用）
+
+```powershell
+# 设置自动附加规则：插上 ST-Link 自动直通到 WSL
+usbipd auto-attach --wsl --hardware-id 0483:3748
+```
+
+执行后，每次插上 ST-Link 都会自动附加到 WSL，无需手动操作。
+
+> 如果有多台调试器需要自动附加，重复执行即可（VID:PID 不同）。
+
+### A.4 一键脚本：attach-stlink.ps1
+
+保存为 `attach-stlink.ps1`，双击或命令行执行：
+
+```powershell
+# attach-stlink.ps1
+# 自动查找并附加所有 ST-Link 设备到 WSL
+
+$stlink_vids = @(
+    "0483:3748",  # ST-Link/V2
+    "0483:374b",  # ST-Link/V2-1
+    "0483:3754",  # ST-Link/V3
+    "0483:3753"   # ST-Link/V3E
+)
+
+foreach ($vid in $stlink_vids) {
+    Write-Host "尝试绑定 $vid ..." -ForegroundColor Cyan
+    usbipd bind --hardware-id $vid 2>$null
+    usbipd attach --wsl --hardware-id $vid 2>$null
+}
+
+Write-Host "完成。在 WSL 中运行 lsusb 验证。" -ForegroundColor Green
+```
+
+### A.5 WSL 端配置 udev 规则（可选）
+
+在 WSL 中创建 udev 规则，确保非 root 用户也能访问 ST-Link：
+
+```bash
+# WSL 中执行
+sudo tee /etc/udev/rules.d/99-stlink.rules << 'EOF'
+# ST-Link/V2
+SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="3748", MODE="0666", GROUP="plugdev"
+# ST-Link/V2-1
+SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="374b", MODE="0666", GROUP="plugdev"
+# ST-Link/V3
+SUBSYSTEM=="usb", ATTR{idVendor}=="0483", ATTR{idProduct}=="3754", MODE="0666", GROUP="plugdev"
+EOF
+
+# 重新加载规则
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+
+# 将当前用户加入 plugdev 组
+sudo usermod -aG plugdev $USER
+```
+
+### A.6 完整工作流
+
+```
+┌─────────────┐    attach     ┌────────────┐    openocd    ┌─────────────┐
+│  ST-Link    │ ───────────→  │   WSL2     │ ───────────→  │   STM32     │
+│  (Windows)  │  VID:PID 绑定 │  Ubuntu    │  flash 命令   │   芯片      │
+└─────────────┘  自动附加      └────────────┘               └─────────────┘
+```
+
+**日常使用**：
+1. 插上 ST-Link → 自动直通到 WSL（auto-attach）
+2. WSL 中执行 `make flash` → OpenOCD 自动找到设备并烧录
+3. 拔掉 ST-Link → 自动断开
+
+**手动操作**（如果未设置 auto-attach）：
+```powershell
+# Windows PowerShell
+usbipd attach --wsl --hardware-id 0483:3748   # 附加
+usbipd detach --hardware-id 0483:3748          # 断开
 ```
 
 ## 附录 B：常用芯片对应参数速查
