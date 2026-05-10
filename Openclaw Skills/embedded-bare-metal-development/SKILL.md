@@ -99,16 +99,47 @@ expected_output: 完整可编译的裸机工程代码，含 main.c、驱动层�
 
 ## 4. Step 2-3：Clerk 检索 & 结构化摘要
 
+### 知识库路径
+
+- **LLM Wiki 知识库**：`/home/whites/knowledge-llm-wiki/Embedded/`
+- **原始资料目录**：`/home/whites/knowledge-llm-wiki/Embedded/raw/`（用户放入新资料）
+- **结构化 Wiki**：`/home/whites/knowledge-llm-wiki/Embedded/wiki/`（LLM 编译维护）
+- **Schema 规则**：`/home/whites/knowledge-llm-wiki/Embedded/schema.md`
+
 ### 检索策略
 
+Clerk 执行三通道检索：
+
 ```python
-keywords = [
-    f"stm32 {chip_family} {library} bare-metal",
-    f"stm32 {peripheral} {library} driver template",
-    f"stm32 {peripheral} interrupt DMA configuration",
+# 1. LLM Wiki 知识库检索（使用 llm-wiki-embedded skill 的 Query 操作）
+# 先检查 raw/ 是否有未 Ingest 的新文件，有则先执行 Ingest
+wiki_query = [
+    f"STM32 {chip_family} {library} bare-metal {peripheral}",
+    f"STM32 {peripheral} interrupt DMA",
+    f"{peripheral} driver template",
 ]
-# memory_search + wiki_search 双通道检索
+
+# 2. memory_search 检索历史项目经验
+memory_keywords = [
+    f"stm32 {chip_family} {library} bare-metal",
+    f"stm32 {peripheral} {library} driver",
+]
+
+# 3. wiki_search 检索 ST 官方文档（如有网络）
+wiki_search_keywords = [
+    f"STM32 {chip_family} {library} {peripheral} configuration",
+]
 ```
+
+### Ingest 触发规则
+
+> Clerk 在检索前，必须先检查 `raw/` 目录是否有未处理的新文件：
+> 
+> ```
+> IF raw/ 中存在未 Ingest 的新文件（对比 wiki/ 中的 sources 字段）
+> → 先执行 Ingest：读取 raw/ 新文件 → 提取关键知识 → 写入 wiki/ 结构化页面
+> → 然后再执行 Query 检索
+> ```
 
 ### Clerk 输出：Structured Summary
 
