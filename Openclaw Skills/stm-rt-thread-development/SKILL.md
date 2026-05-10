@@ -1,5 +1,5 @@
 ---
-name: embedded-rt-thread-development
+name: stm-rt-thread-development
 description: |
   STM32 + RT-Thread 嵌入式代码自主化工作流
   适用于 STM32F1/F4/F7/H7/G0 等系列 + RT-Thread v5.x / v4.1.x
@@ -176,19 +176,39 @@ expected_output: 完整可编译的 RT-Thread 工程，含 main.c、rtconfig.h�
 
 ## 5. Step 2-3：Clerk 检索 & 结构化摘要
 
+### 知识库路径
+
+- **LLM Wiki 知识库**：`/home/whites/knowledge-llm-wiki/Embedded/`
+- **原始资料目录**：`/home/whites/knowledge-llm-wiki/Embedded/raw/`（用户放入新资料）
+- **结构化 Wiki**：`/home/whites/knowledge-llm-wiki/Embedded/wiki/`（LLM 编译维护）
+- **Schema 规则**：`/home/whites/knowledge-llm-wiki/Embedded/schema.md`
+
 ### 检索策略
 
+Clerk 执行三通道检索：
+
 ```python
-keywords = [
-    f"stm32 {chip_family} rt-thread {rt_thread_edition} {rt_thread_version}",
-    f"rt-thread cubemx {peripheral} device driver hal",
-    f"rt-thread thread ipc {ipc_type} example",
-    f"rt-thread Nano embed cubemx project",
-    f"rt-thread finsh msh custom command",
-    f"rt-thread DMA uart idle interrupt HAL",
-    f"rt_device {peripheral} HAL callback",
+# 1. LLM Wiki 知识库检索（使用 llm-wiki-embedded skill 的 Query 操作）
+# 先检查 raw/ 是否有未 Ingest 的新文件，有则先执行 Ingest
+wiki_query = [
+    f"STM32 {chip_family} RT-Thread {peripheral}",
+    f"RT-Thread thread IPC {ipc_type}",
+    f"RT-Thread CubeMX HAL driver",
+    f"DMA UART idle interrupt",
 ]
-# memory_search + wiki_search 双通道检索
+
+# 2. memory_search 检索历史项目经验
+memory_keywords = [
+    f"stm32 {chip_family} rt-thread",
+    f"rt-thread {peripheral}",
+    f"rt-thread Nano Standard",
+]
+
+# 3. wiki_search 检索 RT-Thread 官方文档（如有网络）
+wiki_search_keywords = [
+    f"RT-Thread device framework {peripheral}",
+    f"STM32 {chip_family} HAL DMA",
+]
 ```
 
 ### Clerk 输出：Structured Summary

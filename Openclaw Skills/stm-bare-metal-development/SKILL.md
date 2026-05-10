@@ -1,5 +1,5 @@
 ---
-name: embedded-bare-metal-development
+name: stm-bare-metal-development
 description: |
   STM32 裸机嵌入式代码自主化工作流
   适用于 STM32F1/F4/F7/H7/G0 等系列（HAL 库 / 标准库均可）
@@ -130,16 +130,6 @@ wiki_search_keywords = [
     f"STM32 {chip_family} {library} {peripheral} configuration",
 ]
 ```
-
-### Ingest 触发规则
-
-> Clerk 在检索前，必须先检查 `raw/` 目录是否有未处理的新文件：
-> 
-> ```
-> IF raw/ 中存在未 Ingest 的新文件（对比 wiki/ 中的 sources 字段）
-> → 先执行 Ingest：读取 raw/ 新文件 → 提取关键知识 → 写入 wiki/ 结构化页面
-> → 然后再执行 Query 检索
-> ```
 
 ### Clerk 输出：Structured Summary
 
