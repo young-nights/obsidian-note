@@ -119,7 +119,107 @@ framework_decision:
 
 ---
 
-## 4. Step 1：主管拆解需求
+## 4. 项目创建工作区规范
+
+> 从零搭建项目时，必须遵循以下目录隔离规则。
+
+### 目录定义
+
+| 目录 | 路径 | 用途 | 权限 |
+|------|------|------|------|
+| **库文件目录** | `/home/whites/embedded_lib/` | 存放所有 STM32 库文件（SPL、HAL、RT-Thread 源码等） | **只读**，禁止修改 |
+| **工程项目目录** | `/home/whites/embedded_item/` | 存放所有新建工程 | 读写，可自由创建 |
+
+### 当前可用库
+
+```
+/home/whites/embedded_lib/
+└── stm32f10x-stdperiph-lib/       # STM32F1 标准外设库 (SPL)
+
+# 后续扩展：
+# stm32cubef4/                      # STM32F4 HAL 固件包
+# stm32cubef7/                      # STM32F7 HAL 固件包
+# rt-thread/                        # RT-Thread 源码
+```
+
+### 创建新工程流程
+
+```
+1. 在 /home/whites/embedded_item/ 下创建工程目录
+   mkdir -p /home/whites/embedded_item/{project_name}/
+
+2. 从 embedded_lib/ 复制需要的库文件到工程内
+   # HAL 项目：复制 HAL 驱动 + CMSIS
+   cp -r embedded_lib/stm32cubef4/Drivers/STM32F4xx_HAL_Driver/ \
+         embedded_item/{project_name}/Libraries/HAL_Driver/
+   cp -r embedded_lib/stm32cubef4/Drivers/CMSIS/ \
+         embedded_item/{project_name}/Libraries/CMSIS/
+
+   # RT-Thread 项目：复制 RT-Thread 源码
+   cp -r embedded_lib/rt-thread/src/       embedded_item/{project_name}/rt-thread/src/
+   cp -r embedded_lib/rt-thread/include/   embedded_item/{project_name}/rt-thread/include/
+
+   # Nano 版只需精简文件集
+   # Standard 版需完整源码 + components/
+
+3. 编写业务代码（main.c, drivers/, app/ 等）
+
+4. 编译验证：make 或 scons
+```
+
+### 铁律
+
+1. **库文件只读**：`/home/whites/embedded_lib/` 中的文件永远不修改、不删除
+2. **按需复制**：只复制工程实际用到的驱动文件和组件，不全量拷贝
+3. **路径自包含**：工程内所有路径引用必须指向工程自身目录，禁止引用 `embedded_lib/` 绝对路径
+4. **Makefile/SCons 自包含**：`-I`、`-L`、源文件路径全部在工程目录内
+
+### 工程目录模板（RT-Thread Standard + HAL）
+
+```
+/home/whites/embedded_item/{project_name}/
+├── applications/
+│   ├── main.c
+│   └── app_task.c
+├── drivers/
+│   ├── board.c
+│   ├── board.h
+│   └── drv_uart.c
+├── Libraries/                      # 从 embedded_lib/ 复制过来的库文件
+│   ├── HAL_Driver/                 # HAL 驱动（从 STM32Cube 复制）
+│   │   ├── Inc/
+│   │   └── Src/
+│   └── CMSIS/                      # CMSIS 核心
+├── rt-thread/                      # 从 embedded_lib/ 复制的 RT-Thread 源码
+│   ├── include/
+│   ├── src/
+│   └── components/
+├── Kconfig
+├── SConstruct
+├── rtconfig.h
+└── README.md
+```
+
+### Nano 版工程模板
+
+```
+/home/whites/embedded_item/{project_name}/
+├── Core/
+│   ├── Inc/
+│   └── Src/
+├── Libraries/                      # 从 embedded_lib/ 复制
+│   ├── HAL_Driver/
+│   └── CMSIS/
+├── rt-thread/                      # Nano 精简源码（从 embedded_lib/ 复制）
+│   ├── include/
+│   └── src/                        # 只需 clock.c, thread.c, scheduler.c 等 10 个文件
+├── *.ioc                           # CubeMX 工程文件
+└── README.md
+```
+
+---
+
+## 5. Step 1：主管拆解需求
 
 接收用户模糊需求后，主管必须输出以下内容：
 

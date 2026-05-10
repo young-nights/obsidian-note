@@ -56,7 +56,100 @@ framework_decision:
 
 ---
 
-## 3. Step 1：主管拆解需求
+## 3. 项目创建工作区规范
+
+> 从零搭建项目时，必须遵循以下目录隔离规则。
+
+### 目录定义
+
+| 目录 | 路径 | 用途 | 权限 |
+|------|------|------|------|
+| **库文件目录** | `/home/whites/embedded_lib/` | 存放所有 STM32 库文件（SPL、HAL、CMSIS 等） | **只读**，禁止修改 |
+| **工程项目目录** | `/home/whites/embedded_item/` | 存放所有新建工程 | 读写，可自由创建 |
+
+### 当前可用库
+
+```
+/home/whites/embedded_lib/
+└── stm32f10x-stdperiph-lib/       # STM32F1 标准外设库 (SPL)
+    ├── Libraries/
+    │   ├── CMSIS/CM3/              # CMSIS 核心 + STM32F1 设备支持
+    │   │   ├── CoreSupport/        # core_cm3.h, core_cm3.c
+    │   │   └── DeviceSupport/      # stm32f10x.h, system_stm32f10x.c, startup .s
+    │   └── STM32F10x_StdPeriph_Driver/
+    │       ├── inc/                # 外设头文件 (stm32f10x_gpio.h ...)
+    │       └── src/                # 外设源文件 (stm32f10x_gpio.c ...)
+    └── Project/                    # 官方示例（仅参考，不复制）
+```
+
+> 后续如需添加 HAL 库或 RT-Thread 源码，同样放入 `embedded_lib/` 下。
+
+### 创建新工程流程
+
+```
+1. 在 /home/whites/embedded_item/ 下创建工程目录
+   mkdir -p /home/whites/embedded_item/{project_name}/
+
+2. 从 embedded_lib/ 复制需要的库文件到工程内
+   # 复制 CMSIS 核心文件
+   cp -r embedded_lib/stm32f10x-stdperiph-lib/Libraries/CMSIS/CM3/CoreSupport/ \
+         embedded_item/{project_name}/Libraries/CMSIS/CoreSupport/
+
+   # 复制设备支持文件
+   cp -r embedded_lib/stm32f10x-stdperiph-lib/Libraries/CMSIS/CM3/DeviceSupport/ \
+         embedded_item/{project_name}/Libraries/CMSIS/DeviceSupport/
+
+   # 复制需要的外设驱动（只复制用到的 .c/.h）
+   cp embedded_lib/.../inc/stm32f10x_gpio.h embedded_item/{project_name}/Libraries/SPL/inc/
+   cp embedded_lib/.../src/stm32f10x_gpio.c embedded_item/{project_name}/Libraries/SPL/src/
+
+3. 编写业务代码（main.c, drivers/, app/ 等）
+
+4. Makefile 中所有 include 路径指向工程内部的 Libraries/ 目录
+   # ✅ 正确：-ILibraries/CMSIS/CoreSupport
+   # ❌ 错误：-I/home/whites/embedded_lib/...
+
+5. 编译验证：make
+```
+
+### 铁律
+
+1. **库文件只读**：`/home/whites/embedded_lib/` 中的文件永远不修改、不删除
+2. **按需复制**：只复制工程实际用到的外设驱动文件，不全量拷贝
+3. **路径自包含**：工程内所有路径引用必须指向工程自身目录，禁止引用 `embedded_lib/` 绝对路径
+4. **Makefile 自包含**：`-I`、`-L`、源文件路径全部在工程目录内
+
+### 工程目录模板（SPL 项目）
+
+```
+/home/whites/embedded_item/{project_name}/
+├── Core/
+│   ├── Inc/
+│   │   ├── main.h
+│   │   ├── stm32f10x_conf.h
+│   │   └── stm32f10x_it.h
+│   └── Src/
+│       ├── main.c
+│       ├── stm32f10x_it.c
+│       └── system_stm32f10x.c
+├── Libraries/                      # 从 embedded_lib/ 复制过来的库文件
+│   ├── CMSIS/
+│   │   ├── CoreSupport/            # core_cm3.h, core_cm3.c
+│   │   └── DeviceSupport/          # stm32f10x.h, startup .s
+│   └── SPL/
+│       ├── inc/                    # stm32f10x_gpio.h, stm32f10x_rcc.h ...
+│       └── src/                    # stm32f10x_gpio.c, stm32f10x_rcc.c ...
+├── Drivers/                        # 业务驱动层（自己编写）
+│   ├── drv_led.c
+│   └── drv_uart.c
+├── Makefile
+├── stm32f103c8_flash.ld            # 链接脚本
+└── README.md
+```
+
+---
+
+## 4. Step 1：主管拆解需求
 
 接收用户模糊需求后，主管必须输出以下内容：
 
