@@ -268,7 +268,9 @@ clean:
 
 ```bash
 # 1. 安装 SCons 构建工具
-pip3 install scons
+sudo apt install python3-pip
+# Ubuntu 24.04 的 Python 3.12+ 启用 PEP 668 保护，pip install 需加 --break-system-packages
+pip3 install scons --break-system-packages
 scons --version    # 验证
 
 # 2. 克隆 RT-Thread 源码
