@@ -2,13 +2,13 @@
 tags:
   - openclaw
 created: 2026-04-02 18:19:00
-updated: 2026-05-09 07:25
+updated: 2026-05-16 16:02
 ---
 
 # <font size=4>Windows + WSL + Ubuntu + OpenClaw 本地部署</font>
 
 > [!info] 版本说明
-> 本文档基于 **OpenClaw 2026.4.22** 编写，适用于 2026.4.x 系列版本。
+> 本文档基于 **OpenClaw 2026.4.22** + **Ubuntu 24.04.4 LTS** 编写，适用于 2026.4.x 系列版本。
 > 安装前请确认最新版本：`openclaw --version`
 
 ## <font size=3>简要概述</font>
@@ -22,13 +22,13 @@ updated: 2026-05-09 07:25
 
 ```
 Windows 11 宿主机
-  └── WSL2 (Ubuntu 22.04)
+  └── WSL2 (Ubuntu 24.04)
         ├── Node.js v22.x
         ├── OpenClaw Gateway (127.0.0.1:18789)
-        ├── 多 Agent 系统 (main / coder / evaluator / analyst / secretary / clerk)
-        ├── OpenSpace MCP (systemd user service, SSE on :8081)
-        ├── Codex CLI (需 OpenAI API Key)
-        └── 可选: ClawMetry 等辅助工具
+        ├── 多 Agent 系统 (main / coder / evaluator / analyst / secretary)
+        ├── GitHub CLI (gh v2.92.0)
+        ├── Claude Code v2.1.143 + DeepSeek API
+        └── 可选: OpenSpace MCP / ClawMetry
 ```
 
 </font>
@@ -51,13 +51,13 @@ wsl --list --online
 wsl --shutdown
 
 # 3.2 卸载(删除)指定发行版
-wsl --unregister Ubuntu-22.04
+wsl --unregister Ubuntu-24.04
 
-# 4. 安装特定版本(例如 Ubuntu 22.04)
-wsl --install -d Ubuntu-22.04
+# 4. 安装特定版本(例如 Ubuntu 24.04)
+wsl --install -d Ubuntu-24.04
 
 # 5. 设置 Ubuntu 为默认打开
-wsl --setdefault Ubuntu-22.04
+wsl --setdefault Ubuntu-24.04
 
 # 6. 更新安装工具
 sudo apt update && sudo apt upgrade -y
@@ -82,7 +82,7 @@ npm --version
 
 ```bash
 # 一键安装（推荐）
-curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL --proto '=https' --tlsv1.2 https://openclaw.ai/install.sh | bash -s -- --version 2026.4.22 --no-onboard
 
 # 如果一键安装失败，手动安装：
 # npm install -g openclaw
@@ -200,12 +200,10 @@ appendWindowsPath=true
 
       // 可用模型列表（别名映射）
       "models": {
-        "xiaomi/mimo-v2-omni": { "alias": "mimo-v2-omni" },
-        "xiaomi/mimo-v2-pro": { "alias": "mimo-v2-pro" },
-        "zai/glm-4.1v-thinking-flashx": { "alias": "GLM-4.1V-Thinking-FlashX" },
-        "moonshot/kimi-2.5": { "alias": "Kimi-2.5" },
-        "openrouter/xiaomi/mimo-v2-pro": { "alias": "openrouter/xiaomi/mimo-v2-pro" },
-        "x-ai/grok-4.1-fast": { "alias": "x-ai/grok-4.1-fast" }
+        "xiaomi/mimo-v2-flash": {
+          "alias": "Xiaomi"
+        },
+        "xiaomi/mimo-v2-pro": {}
       },
 
       "subagents": { "maxConcurrent": 5 },
@@ -223,7 +221,7 @@ appendWindowsPath=true
         "workspace": "/home/whites/.openclaw/workspace",
         "model": {
           "primary": "xiaomi/mimo-v2-pro",
-          "fallbacks": ["x-ai/grok-4.1-fast", "moonshot/kimi-2.5"]
+          "fallbacks": []
         },
         "subagents": {
           "allowAgents": ["secretary", "coder", "evaluator", "analyst"]
@@ -234,8 +232,8 @@ appendWindowsPath=true
         "name": "Secretary",
         "workspace": "/home/whites/.openclaw/workspace/agents/secretary",
         "model": {
-          "primary": "x-ai/grok-4.1-fast",
-          "fallbacks": ["xiaomi/mimo-v2-pro", "moonshot/kimi-2.5"]
+          "primary": "xiaomi/mimo-v2-pro",
+          "fallbacks": []
         },
         "tools": {
           "allow": ["calendar", "email", "reminder", "web_search", "read", "write", "exec"],
@@ -249,8 +247,8 @@ appendWindowsPath=true
         "name": "Coder",
         "workspace": "/home/whites/.openclaw/workspace/agents/coder",
         "model": {
-          "primary": "openrouter/xiaomi/mimo-v2-pro",
-          "fallbacks": ["x-ai/grok-4.1-fast", "xiaomi/mimo-v2-pro", "moonshot/kimi-2.5"]
+          "primary": "xiaomi/mimo-v2-pro",
+          "fallbacks": []
         }
       },
       {
@@ -258,8 +256,8 @@ appendWindowsPath=true
         "name": "Evaluator",
         "workspace": "/home/whites/.openclaw/workspace/agents/evaluator",
         "model": {
-          "primary": "moonshot/kimi-2.5",
-          "fallbacks": ["xiaomi/mimo-v2-pro"]
+          "primary": "xiaomi/mimo-v2-pro",
+          "fallbacks": []
         }
       },
       {
@@ -268,7 +266,7 @@ appendWindowsPath=true
         "workspace": "/home/whites/.openclaw/workspace/agents/analyst",
         "model": {
           "primary": "xiaomi/mimo-v2-omni",
-          "fallbacks": ["moonshot/kimi-2.5", "xiaomi/mimo-v2-pro"]
+          "fallbacks": []
         }
       }
     ]
@@ -327,10 +325,6 @@ appendWindowsPath=true
       "search": {
         "provider": "grok",
         "enabled": true
-      },
-      "x_search": {
-        "enabled": true,
-        "model": "grok-4-1-fast"
       }
     }
   }
@@ -368,14 +362,15 @@ appendWindowsPath=true
         ]
       },
       "xiaomi": {
-        "baseUrl": "https://api.xiaomimimo.com/v1",
+        "baseUrl": "https://token-plan-cn.xiaomimimo.com/v1",
         "api": "openai-completions",
         "models": [
           {
             "id": "mimo-v2-flash",
             "name": "Xiaomi MiMo V2 Flash",
-            "reasoning": true,
+            "reasoning": false,
             "input": ["text"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
             "contextWindow": 262144,
             "maxTokens": 8192
           },
@@ -384,6 +379,7 @@ appendWindowsPath=true
             "name": "Xiaomi MiMo V2 Pro",
             "reasoning": true,
             "input": ["text"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
             "contextWindow": 1048576,
             "maxTokens": 32000
           },
@@ -392,6 +388,7 @@ appendWindowsPath=true
             "name": "Xiaomi MiMo V2 Omni",
             "reasoning": true,
             "input": ["text", "image"],
+            "cost": { "input": 0, "output": 0, "cacheRead": 0, "cacheWrite": 0 },
             "contextWindow": 262144,
             "maxTokens": 32000
           }
@@ -442,20 +439,10 @@ appendWindowsPath=true
       "appSecret": "<飞书应用 App Secret>",
       "connectionMode": "websocket",
       "domain": "feishu",
-      "groupPolicy": "allowlist"          // allowlist | open | closed
-    },
-    "telegram": {
-      "enabled": true,
-      "groups": {
-        "*": { "requireMention": true }
-      },
-      "botToken": "<Telegram Bot Token>"
-    },
-    "qqbot": {
-      "enabled": false,
-      "allowFrom": ["*"],
-      "appId": "<QQ Bot App ID>",
-      "clientSecret": "<QQ Bot Client Secret>"
+      "dmPolicy": "allowlist",             // allowlist | open | closed（私聊策略）
+      "allowFrom": ["<你的 Feishu open_id>"],  // dmPolicy=allowlist 时的白名单
+      "groupPolicy": "open",               // allowlist | open | closed（群聊策略）
+      "requireMention": true               // 群聊中需要 @机器人 才响应
     }
   }
 }
@@ -478,20 +465,16 @@ appendWindowsPath=true
       "xai": {
         "enabled": true,
         "config": {
-          "webSearch": { "apiKey": "<xAI API Key>" },
-          "xSearch": { "enabled": true, "model": "grok-4-1-fast" }
+          "webSearch": { "apiKey": "<xAI API Key>" }
         }
       },
-      "feishu": { "enabled": true },
-      "xiaomi": { "enabled": true },
-      "openrouter": { "enabled": true },
-      "moonshot": { "enabled": true },
+      "feishu": { "enabled": true, "config": {} },
+      "xiaomi": { "enabled": true, "config": {} },
       "memory-core": {
         "config": {
           "dreaming": { "enabled": true }
         }
-      },
-      "zai": { "enabled": true }
+      }
     }
   },
 
@@ -502,8 +485,7 @@ appendWindowsPath=true
         "boot-md": { "enabled": true },
         "bootstrap-extra-files": { "enabled": true },
         "command-logger": { "enabled": true },
-        "session-memory": { "enabled": true },
-        "openspace-autostart": { "enabled": false }    // 已由 systemd user service 管理，hook 禁用
+        "session-memory": { "enabled": true }
       }
     }
   },
@@ -512,29 +494,14 @@ appendWindowsPath=true
     "load": {
       "extraDirs": ["/home/whites/.openclaw/workspace/skills"]
     }
-  },
-
-  "bindings": [
-    {
-      "type": "route",
-      "agentId": "main",
-      "match": { "channel": "feishu" }
-    },
-    {
-      "type": "route",
-      "agentId": "secretary",
-      "match": { "channel": "telegram" }
-    }
-  ]
+  }
 }
 ```
 
 > [!info] 新增配置模块说明（2026.4.x）
 > - **plugins**: 各供应商插件 + memory-core（记忆/梦境功能）
 > - **hooks**: 内部钩子，agent bootstrap 时自动执行（如 session-memory 自动加载记忆）
->   - `openspace-autostart` hook 已禁用，OpenSpace MCP 由 systemd user service 管理（更可靠，支持崩溃重启）
 > - **skills**: 额外技能目录，Agent 可自动发现并使用
-> - **bindings**: 路由绑定，指定哪个 channel 的消息路由到哪个 Agent
 
 </font>
 
@@ -556,11 +523,12 @@ appendWindowsPath=true
 
 ## <font size=3>安装辅助工具</font>
 
-### <font size=2>ClawMetry</font>
+### <font size=2>ClawMetry（可选）</font>
 
 <font size=2>
 
-ClawMetry 是专为 OpenClaw 设计的开源实时监控面板。
+> [!tip] 可选组件
+> ClawMetry 是专为 OpenClaw 设计的开源实时监控面板，按需安装。
 
 ```bash
 # 安装
@@ -645,11 +613,12 @@ Karpathy LLM Skill（也常称为 Karpathy LLM Wiki 或 Karpathy-style LLM Knowl
 
 </font>
 
-### <font size=2>OpenSpace</font>
+### <font size=2>OpenSpace（可选）</font>
 
 <font size=2>
 
-OpenSpace 是 OpenClaw 的全栈自主任务执行引擎，通过 MCP Server 接入，支持编码、DevOps、Web 搜索、桌面自动化等能力，内置技能库可自动进化。
+> [!tip] 可选组件
+> OpenSpace 是 OpenClaw 的全栈自主任务执行引擎，按需安装。通过 MCP Server 接入，支持编码、DevOps、Web 搜索、桌面自动化等能力，内置技能库可自动进化。
 
 **安装**
 
@@ -889,34 +858,109 @@ Obsidian 作为本地 Markdown 知识库编辑器，配合 OpenClaw 使用。
 
 </font>
 
-### <font size=2>Codex CLI</font>
+### <font size=2>Claude Code + DeepSeek</font>
 
 <font size=2>
 
-OpenAI Codex CLI 是 OpenAI 官方终端编程智能体，可作为 OpenClaw 的 ACP 子代理使用。详细部署与配置教程见独立文档：
+Claude Code 是 Anthropic 官方终端编程智能体，通过 DeepSeek 的 Anthropic 兼容接口可免去 Anthropic 账号登录。
 
-- 📄 **[Windos+WSL+Ubuntu环境下的Codex部署与配置.md](./Windos+WSL+Ubuntu环境下的Codex部署与配置.md)**
-
-> [!important] 重要前提
-> Codex 使用 OpenAI 专有的 **Responses WebSocket 协议**（`wss://api.openai.com/v1/responses`），
-> **必须配置真实的 OpenAI API Key**。OpenRouter 等第三方聚合服务不支持此协议，无法替代。
-
-**快速安装**：
+**安装**：
 
 ```bash
-# 安装
-npm install -g @openai/codex
+npm install -g @anthropic-ai/claude-code
+```
 
-# 配置 Key
-cat > ~/.codex/auth.json << 'EOF'
+**配置 DeepSeek API**：
+
+写入 `~/.profile`（WSL2 登录 shell 会自动加载）：
+
+```bash
+# Claude Code + DeepSeek
+export ANTHROPIC_BASE_URL="https://api.deepseek.com/anthropic"
+export ANTHROPIC_API_KEY="<你的 DeepSeek API Key>"
+export ANTHROPIC_MODEL="deepseek-chat"
+alias claude='/home/whites/.npm-global/bin/claude --bare'
+```
+
+配置 `apiKeyHelper` 以绕过登录：
+
+```bash
+mkdir -p ~/.claude
+cat > ~/.claude/settings.json << 'EOF'
 {
-  "OPENAI_API_KEY": "sk-your-key-here"
+  "apiKeyHelper": "echo <你的 DeepSeek API Key>"
 }
 EOF
-
-# 验证
-codex exec "say hello in one word"
 ```
+
+**使用**：
+
+```bash
+source ~/.profile
+claude              # 交互模式
+claude -p "提示"     # 非交互模式
+```
+
+> [!tip] 关键配置说明
+> - `--bare` 模式跳过 Anthropic OAuth 登录，直接使用 API Key
+> - DeepSeek 提供原生 Anthropic 兼容端点 `https://api.deepseek.com/anthropic`
+> - 支持模型：`deepseek-chat`、`deepseek-reasoner`、`deepseek-v4-pro`
+> - WSL2 登录 shell 加载 `.profile` 而非 `.bashrc`，环境变量需写入 `.profile`
+
+</font>
+
+### <font size=2>GitHub CLI (gh)</font>
+
+<font size=2>
+
+GitHub CLI 用于 PR、Issue、CI 等 GitHub 操作，是 `github` 和 `gh-issues` Skill 的依赖工具。
+
+**安装**：
+
+```bash
+sudo apt install gh -y
+```
+
+**认证**：
+
+```bash
+# 方式一：Token 认证（推荐）
+gh auth login --with-token <<< "你的 GitHub PAT"
+
+# 方式二：浏览器认证
+gh auth login --web
+```
+
+**验证**：
+
+```bash
+gh auth status
+gh repo list --limit 5
+```
+
+> [!tip] Token 权限要求
+> Fine-grained PAT 需勾选：Contents (R/W)、Metadata (R)、Pull requests (R/W)、Issues (R/W)
+
+</font>
+
+### <font size=2>自定义 Skills</font>
+
+<font size=2>
+
+OpenClaw 自定义 Skills 放在 `~/.openclaw/workspace/skills/` 目录下，系统自动发现并加载。
+
+当前已配置的自定义 Skills：
+
+| Skill | 用途 |
+|-------|------|
+| `email-manager` | 邮件智能分拣 |
+| `list-files-frontmatter-markdown-table` | 文件 Frontmatter 表格生成 |
+| `llm-wiki-embedded` | 嵌入式知识库（Karpathy 风格） |
+| `stm-bare-metal-development` | STM32 裸机开发工作流 |
+| `stm-rt-thread-development` | STM32 + RT-Thread 开发工作流 |
+
+> [!info] Skills 加载优先级
+> 自定义 Skills > 内置 Skills（npm 包内） > 飞书扩展 Skills。同名 Skill 自定义优先覆盖。
 
 </font>
 
@@ -979,6 +1023,8 @@ openclaw cron logs           # 查看任务执行日志
 | `plugins.entries` | ✅ | ✅ | 各供应商 + memory-core 插件 |
 | `tools.exec.host: "gateway"` | ✅ | ✅ | gateway 模式可访问挂载盘 |
 | `wizard` 自动配置记录 | ✅ | ✅ | 自动维护，无需手动设置 |
+| `tools.exec.ask` 审批开关 | ✅ | ✅ | off=免审批，on=每次确认 |
+| `session.dmScope` | ✅ | ✅ | 私聊会话隔离 |
 
 > [!tip] 升级提示
 > 从旧版本升级到 2026.4.22：`npm update -g openclaw` 或 `openclaw update`
