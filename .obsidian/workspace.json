@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "前后端设计开发笔记/CodeObservatory-环境搭建说明.md",
+                "file": "CodeObservatory-代码演化观察站开发笔记/CodeObservatory-项目方案.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "CodeObservatory-环境搭建说明"
+              "title": "CodeObservatory-项目方案"
             }
           }
         ]
@@ -199,7 +199,12 @@
   },
   "active": "d263037d291d3c61",
   "lastOpenFiles": [
+    "VScode 前端开发笔记/VScode前端开发环境搭建.md",
+    "CodeObservatory-代码演化观察站开发笔记/CodeObservatory-项目方案.md",
+    "VScode 前端开发笔记/📁 VScode 前端开发笔记 MOC.md",
+    "CodeObservatory-代码演化观察站开发笔记/CodeObservatory-环境搭建说明.md",
     "前后端设计开发笔记/CodeObservatory-环境搭建说明.md",
+    "CodeObservatory-代码演化观察站开发笔记",
     "Openclaw本地部署笔记/Windows+WSL+Ubuntu本地部署.md",
     "Claude Code本地部署笔记/Windows+WSL+Ubuntu本地部署.md",
     "Claude Code本地部署笔记/Claude Code 使用说明.md",
@@ -222,20 +227,15 @@
     "Ubuntu-Server配置笔记/Ubuntu-Server-OpenMV开发环境搭建.md",
     "Ubuntu-Server配置笔记/Ubuntu-Server-ESP32开发环境搭建.md",
     "Openclaw本地部署笔记/Windows+WSL+Ubuntu本地部署.html",
-    "VScode 前端开发笔记/VScode前端开发环境搭建.md",
-    "VScode 前端开发笔记/📁 VScode 前端开发笔记 MOC.md",
     "VScode 前端开发笔记/VScode 前端开发笔记.md",
     "VScode 前端开发环境搭建/新建 文本文档.txt",
     "VScode 前端开发笔记/images",
     "VScode 前端开发环境搭建/新建文件夹",
     "VScode 前端开发笔记",
-    "Windows+VScode 前端开发环境搭建",
     "Openclaw本地部署笔记/images/ollama-config-png1.png",
     "Templates For Templator/📖 Templater 使用说明.md",
     "Ubuntu-Server配置笔记/🖥️ Ubuntu-Server MOC.md",
     "Openclaw本地部署笔记/Windows WSL + Ubuntu 本地部署.md",
-    "Ubuntu-Server配置笔记/Ubuntu-Server-Git环境搭建.md",
-    "Linux涉及到的一些笔记/🐧 Linux 笔记 MOC.md",
     "Openclaw本地部署笔记/images/openclaw-widnows-9.png",
     "Openclaw本地部署笔记/images/openclaw-widnows-8.png",
     "Openclaw本地部署笔记/images/openclaw-widnows-7.png",
