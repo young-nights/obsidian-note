@@ -35,14 +35,14 @@ created: 2026-05-25
 
 以下组件按安装顺序列出。
 
-### 1.1 Git
+#### 1.1 Git
 
 **用途**：版本控制，项目管理。
 
 - 下载地址：[https://git-scm.com/downloads/win](https://git-scm.com/downloads/win)
 - 安装建议：全部默认即可，编辑器选 VS Code（如果已安装）。
 
-### 1.2 Node.js
+#### 1.2 Node.js
 
 **用途**：前端运行时与包管理。
 
@@ -50,7 +50,7 @@ created: 2026-05-25
 - 安装时勾选 **「Automatically install the necessary tools」**（会自动安装 Chocolatey 和 Python 等构建依赖，对后续 native addon 编译有帮助）。
 - 安装后 npm 随同安装，无需单独处理。
 
-### 1.3 Rust（rustup）
+#### 1.3 Rust（rustup）
 
 **用途**：Tauri 后端的 Rust 编译工具链。
 
@@ -59,7 +59,7 @@ created: 2026-05-25
 - **安装选项**：默认选 `1) Proceed with standard installation` 即可。
 - 安装完成后 **务必注销并重新登录 Windows**（或重启），确保 PATH 环境变量生效。否则 VS Code 终端可能找不到 `cargo` 命令（详见 [§4 常见问题](#4-常见问题)）。
 
-### 1.4 Visual Studio Build Tools
+#### 1.4 Visual Studio Build Tools
 
 **用途**：Windows 下编译 Rust 原生代码所需的 MSVC 工具链（Tauri 编译 Windows 版本的必要条件）。
 
@@ -83,7 +83,7 @@ created: 2026-05-25
 | **Prettier** (`esbenp.prettier-vscode`) | 前端代码自动格式化（JS/TS/JSX/TSX/JSON/CSS） |
 | **ESLint** (`dbaeumer.vscode-eslint`) | 前端代码质量检查 |
 
-### 2.1 推荐的 VS Code 设置（`settings.json`）
+#### 2.1 推荐的 VS Code 设置（`settings.json`）
 
 ```json
 {
@@ -110,7 +110,7 @@ cargo --version   # 预期: cargo 1.95.x
 git --version     # 预期: git version 2.x.x
 ```
 
-### 3.1 额外验证：确认 Rust 工具链为 MSVC
+#### 3.1 额外验证：确认 Rust 工具链为 MSVC
 
 ```bash
 rustup show active-toolchain
@@ -127,7 +127,7 @@ rustup default stable-x86_64-pc-windows-msvc
 
 ## 四、常见问题
 
-### Q1：VS Code 终端找不到 `cargo` / `rustc` 命令
+#### Q1：VS Code 终端找不到 `cargo` / `rustc` 命令
 
 **原因**：rustup 安装时会修改 PATH 环境变量，但已打开的终端不会自动刷新。**
 
@@ -138,19 +138,19 @@ rustup default stable-x86_64-pc-windows-msvc
 
 > 不需要手动改 PATH，rustup 已经自动做了这件事，只是需要会话刷新。
 
-### Q2：`npm install` 报 `MSBuild` / `cl.exe` 找不到
+#### Q2：`npm install` 报 `MSBuild` / `cl.exe` 找不到
 
 **原因**：未安装 Visual Studio Build Tools 或安装时未勾选 C++ 组件。**
 
 **解决方法**：打开 Visual Studio Installer → 修改 → 勾选「使用 C++ 的桌面开发」→ 安装。
 
-### Q3：Tauri build 报 `error: linker 'link.exe' not found`
+#### Q3：Tauri build 报 `error: linker 'link.exe' not found`
 
 **原因**：同上，缺少 MSVC 工具链。**
 
 **解决方法**：参照 Q2。
 
-### Q4：`npm create tauri-app@latest` 提示网络错误
+#### Q4：`npm create tauri-app@latest` 提示网络错误
 
 **原因**：npm 默认源可能被墙。**
 
@@ -169,7 +169,7 @@ replace-with = 'ustc'
 registry = "https://mirrors.ustc.edu.cn/crates.io-index"
 ```
 
-### Q5：首次 `npm run tauri dev` 非常慢
+#### Q5：首次 `npm run tauri dev` 非常慢
 
 **原因**：首次运行需要下载并编译所有 Rust 依赖（包括 Tauri 核心、WebView2 等），这是正常现象。后续增量编译会快很多。**
 
@@ -177,7 +177,7 @@ registry = "https://mirrors.ustc.edu.cn/crates.io-index"
 
 ## 五、项目创建
 
-### 5.1 创建新项目
+#### 5.1 创建新项目
 
 ```bash
 npm create tauri-app@latest
@@ -193,14 +193,14 @@ npm create tauri-app@latest
 ? Choose your UI template:  React + TypeScript (default)
 ```
 
-### 5.2 进入项目并安装依赖
+#### 5.2 进入项目并安装依赖
 
 ```bash
 cd codeobservatory
 npm install
 ```
 
-### 5.3 开发运行
+#### 5.3 开发运行
 
 ```bash
 npm run tauri dev
@@ -209,7 +209,7 @@ npm run tauri dev
 - 首次启动会下载 WebView2 运行时（如果系统未安装）并编译 Rust 后端，预计需要 5-15 分钟（取决于网络和机器性能）。
 - 后续热更新启动通常在 30 秒内。
 
-### 5.4 生产构建
+#### 5.4 生产构建
 
 ```bash
 npm run tauri build
@@ -243,7 +243,74 @@ codeobservatory/
 
 ---
 
-## 七、环境搭建检查清单
+## 七、默认模板说明
+
+### 7.1 启动后看到什么
+
+首次运行 `npm run tauri dev`，编译完成后会弹出一个独立桌面窗口，显示默认的 **Tauri + React 欢迎页**：
+
+- 顶部 Tauri / Vite / React 三个 logo
+- 一个输入框，提示 `Enter a name...`
+- 一个 Greet 按钮
+
+### 7.2 输入框是干什么的
+
+这是 Tauri 官方模板自带的 **前后端桥接示例**（Demo），旨在演示 React 前端如何调用 Rust 后端的核心通信模式。
+
+**工作流程**：
+
+```
+用户输入 name → 点击 Greet
+    ↓
+React invoke("greet", { name })
+    ↓ (Tauri IPC 进程间通信)
+Rust greet(name) 函数处理
+    ↓
+返回 "Hello, xxx! You've been greeted from Rust!"
+    ↓
+React 显示结果字符串
+```
+
+**前端代码**（`src/App.tsx`）：
+```tsx
+import { invoke } from "@tauri-apps/api/core";
+
+async function greet() {
+  setGreetMsg(await invoke("greet", { name }));
+}
+```
+
+**后端代码**（`src-tauri/src/lib.rs`）：
+```rust
+#[tauri::command]
+fn greet(name: &str) -> String {
+    format!("Hello, {}! You've been greeted from Rust!", name)
+}
+```
+
+### 7.3 有何意义
+
+这个 Demo 演示了 Tauri 的核心架构能力：
+
+| 概念 | 说明 |
+|------|------|
+| **IPC 通信** | 前端通过 `invoke(command, args)` 调用 Rust 函数，无需 HTTP/WebSocket，零网络开销 |
+| **双向映射** | `invoke("greet")` 自动找到 `#[tauri::command] fn greet()`，名称即约定 |
+| **类型安全** | TypeScript 前端 + Rust 后端，两端都是强类型 |
+| **轻量** | Tauri 窗口仅 ~5MB，不使用 Chromium，用系统原生 WebView2 |
+
+### 7.4 后续开发
+
+这个默认模板是你开发 CodeObservatory 的起点。实际开发中：
+
+- 删除 `greet` 示例代码
+- 在 `src/` 下编写真实业务页面和组件
+- 在 `src-tauri/src/lib.rs` 中注册真正的文件监听、Git 解析、图计算等后端命令
+- 保持 `invoke()` 通信模式不变
+
+---
+
+## 八、环境搭建检查清单
 
 在继续开发之前，逐项确认：
 
