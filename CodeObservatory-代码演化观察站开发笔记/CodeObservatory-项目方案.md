@@ -15,7 +15,7 @@ UI 设计借鉴 Cursor / Windsurf / Linear 现代风格：深色主题、左侧�
 | 前端 | React 19 + Vite 6 + TypeScript |
 | UI | Tailwind v3（布局）+ 自定义 co-* CSS 设计系统 |
 | 动效 | 纯 CSS keyframes（已移除 framer-motion） |
-| 图可视化 | Cytoscape.js |
+| 图可视化 | Three.js + React Three Fiber（3D WebGL 星系图谱）+ Bloom 后处理 |
 | 后端 | Rust（notify / rusqlite / serde） |
 | 本地数据库 | SQLite（每项目 .observatory/db.sqlite） |
 | Git 仓库 | [github.com/young-nights/CodeObservatory](https://github.com/young-nights/CodeObservatory) |
@@ -101,4 +101,4 @@ code-observatory/
 | v0.3 | 2026-05-26 | MVP 开发完成，8 个 Rust commands + 7 个 React 页面/组件 |
 | v0.4 | 2026-05-26 | UI 全面重设计：Android Studio 风格、co-theme CSS 系统、shadcn/ui 组件 |
 | v0.5 | 2026-05-26 | 添加 Dark/Light 主题切换（useTheme hook + localStorage 持久化 + CSS 变量适配） |
-| v0.6 | 2026-05-26 | Sigma.js WebGL 替代 Cytoscape + 星河图谱五层太阳系模型（Star/Planet/Moon/Satellite/Dust）+ forceatlas2 力导向布局 + 节点拖拽 |
+| v0.6 | 2026-05-26 | Graph 技术升级：Three.js + R3F + Bloom 后处理替代 Sigma.js，实现 3D 宇宙星系效果 + Obsidian 风格控制面板（搜索/力度/外观滑块） |

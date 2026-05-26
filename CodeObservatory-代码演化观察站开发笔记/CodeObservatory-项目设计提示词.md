@@ -127,7 +127,7 @@ CodeObservatory 提供三个核心能力：
 - ✅ 项目选择器（Android Studio 风格双栏布局）
 - ✅ 文件监听（notify crate）+ 变更记录 + SQLite
 - ✅ Dashboard（统计卡片） + Timeline（时间线）
-- ✅ Graph：Sigma.js WebGL + graphology + 五层太阳系模型
+- ✅ Graph：Three.js + React Three Fiber + Bloom 后处理 + 3D 宇宙星系
 - ✅ 星河图谱：Star→Planet→Moon→Satellite→Dust 层级
 - ✅ 点击展开/折叠目录、文件 Din 历史查询（SQLite）
 - ✅ forceatlas2 力导向布局 + 节点拖拽
