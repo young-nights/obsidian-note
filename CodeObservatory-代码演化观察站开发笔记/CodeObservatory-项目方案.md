@@ -101,4 +101,4 @@ code-observatory/
 | v0.3 | 2026-05-26 | MVP 开发完成，8 个 Rust commands + 7 个 React 页面/组件 |
 | v0.4 | 2026-05-26 | UI 全面重设计：Android Studio 风格、co-theme CSS 系统、shadcn/ui 组件 |
 | v0.5 | 2026-05-26 | 添加 Dark/Light 主题切换（useTheme hook + localStorage 持久化 + CSS 变量适配） |
-| v0.6 | 2026-05-26 | 宇宙星河图谱 + Preciaion Instrument 设计系统（OKLCH 色彩、Georgia serif、4pt 间距、移除全反模式） |
+| v0.6 | 2026-05-26 | Sigma.js WebGL 替代 Cytoscape + 星河图谱五层太阳系模型（Star/Planet/Moon/Satellite/Dust）+ forceatlas2 力导向布局 + 节点拖拽 |

@@ -125,14 +125,14 @@ CodeObservatory 提供三个核心能力：
 ### 已完成
 - ✅ Tauri 2 + React 19 + Vite 6 脚手架
 - ✅ 项目选择器（Android Studio 风格双栏布局）
-- ✅ 文件监听（notify crate）
-- ✅ 变更记录 + SQLite 索引
-- ✅ Dashboard（统计卡片 + 最近变更）
-- ✅ Timeline（时间线列表 + 变色标签）
-- ✅ Graph（Cytoscape 暗色主题）
-- ✅ shadcn 风格 UI 组件库（button/card/badge/tabs/tooltip/separator/avatar/scroll-area）
-- ✅ 布局组件（Sidebar/TopBar/AppLayout）
-- ✅ 暗色主题 CSS 设计系统（co-* 类）
+- ✅ 文件监听（notify crate）+ 变更记录 + SQLite
+- ✅ Dashboard（统计卡片） + Timeline（时间线）
+- ✅ Graph：Sigma.js WebGL + graphology + 五层太阳系模型
+- ✅ 星河图谱：Star→Planet→Moon→Satellite→Dust 层级
+- ✅ 点击展开/折叠目录、文件 Din 历史查询（SQLite）
+- ✅ forceatlas2 力导向布局 + 节点拖拽
+- ✅ OKLCH 色彩空间 + Precision Instrument 设计系统
+- ✅ 暗/亮主题切换（localStorage 持久化）
 - ✅ GitHub 仓库推送
 
 ### 待实现
