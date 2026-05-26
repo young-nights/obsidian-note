@@ -97,3 +97,4 @@ code-observatory/
 | v0.3 | 2026-05-26 | MVP 开发完成，8 个 Rust commands + 7 个 React 页面/组件 |
 | v0.4 | 2026-05-26 | UI 全面重设计：Android Studio 风格、co-theme CSS 系统、shadcn/ui 组件 |
 | v0.5 | 2026-05-26 | 添加 Dark/Light 主题切换（useTheme hook + localStorage 持久化 + CSS 变量适配） |
+| v0.6 | 2026-05-26 | 宇宙星河文件关系图谱：Rust scan_directory 递归扫描 + Graph 页面重构（深空背景、星云色谱、发光节点、星座连线） |
