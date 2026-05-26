@@ -175,9 +175,55 @@ registry = "https://mirrors.ustc.edu.cn/crates.io-index"
 
 ---
 
-## 五、项目创建
+## 五、项目依赖安装
 
-#### 5.1 创建新项目
+#### 7.1 核心依赖
+
+```bash
+npm install @tauri-apps/api @tauri-apps/plugin-dialog @tauri-apps/plugin-fs @tauri-apps/plugin-shell
+```
+
+#### 7.2 前端 UI 依赖
+
+```bash
+npm install react react-dom react-router-dom
+npm install lucide-react class-variance-authority clsx tailwind-merge
+npm install framer-motion
+```
+
+#### 7.3 3D 图谱依赖
+
+```bash
+npm install three @react-three/fiber @react-three/drei @react-three/postprocessing
+```
+
+#### 7.4 图数据处理
+
+```bash
+npm install cytoscape react-cytoscapejs
+npm install sigma graphology graphology-layout-forceatlas2
+```
+
+#### 5.5 开发依赖
+
+```bash
+npm install -D typescript vite @vitejs/plugin-react
+npm install -D tailwindcss postcss autoprefixer tailwindcss-animate
+npm install -D @tauri-apps/cli
+npm install -D @types/react @types/react-dom @types/node @types/cytoscape
+```
+
+#### 5.6 一键安装全部
+
+```bash
+npm install @tauri-apps/api @tauri-apps/plugin-dialog @tauri-apps/plugin-fs @tauri-apps/plugin-shell react react-dom react-router-dom lucide-react class-variance-authority clsx tailwind-merge framer-motion three @react-three/fiber @react-three/drei @react-three/postprocessing cytoscape react-cytoscapejs sigma graphology graphology-layout-forceatlas2 && npm install -D typescript vite @vitejs/plugin-react tailwindcss postcss autoprefixer tailwindcss-animate @tauri-apps/cli @types/react @types/react-dom @types/node @types/cytoscape
+```
+
+---
+
+## 六、项目创建
+
+#### 7.1 创建新项目
 
 ```bash
 npm create tauri-app@latest
@@ -193,14 +239,14 @@ npm create tauri-app@latest
 ? Choose your UI template:  React + TypeScript (default)
 ```
 
-#### 5.2 进入项目并安装依赖
+#### 7.2 进入项目并安装依赖
 
 ```bash
 cd codeobservatory
 npm install
 ```
 
-#### 5.3 开发运行
+#### 7.3 开发运行
 
 ```bash
 npm run tauri dev
@@ -209,7 +255,7 @@ npm run tauri dev
 - 首次启动会下载 WebView2 运行时（如果系统未安装）并编译 Rust 后端，预计需要 5-15 分钟（取决于网络和机器性能）。
 - 后续热更新启动通常在 30 秒内。
 
-#### 5.4 生产构建
+#### 7.4 生产构建
 
 ```bash
 npm run tauri build
@@ -219,7 +265,7 @@ npm run tauri build
 
 ---
 
-## 六、项目目录结构（标准模板）
+## 八、项目目录结构（标准模板）
 
 ```
 codeobservatory/
@@ -243,7 +289,7 @@ codeobservatory/
 
 ---
 
-## 七、默认模板说明
+## 九、默认模板说明
 
 ### 7.1 启动后看到什么
 
@@ -310,7 +356,7 @@ fn greet(name: &str) -> String {
 
 ---
 
-## 八、环境搭建检查清单
+## 十、环境搭建检查清单
 
 在继续开发之前，逐项确认：
 
