@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 *.py:Zone.Identifier
+.obsidian/plugins/extended-graph/data.json
+.obsidian/workspace.json
