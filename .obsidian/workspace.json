@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "微星WSL2的一些笔记/WSL2 GitHub 推送操作指南.md",
-                "mode": "preview",
+                "file": "微星WSL2的一些笔记/WSL2 GitHub 推送拉取操作指南.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "WSL2 GitHub 推送操作指南"
+              "title": "WSL2 GitHub 推送拉取操作指南"
             }
           }
         ]
@@ -199,6 +199,8 @@
   },
   "active": "d263037d291d3c61",
   "lastOpenFiles": [
+    "微星WSL2的一些笔记/WSL2 GitHub 推送操作指南.md",
+    "微星WSL2的一些笔记/WSL2 GitHub 推送拉取操作指南.md",
     "Linux涉及到的一些笔记/Ubuntu-desktop配置.md",
     "QT 应用开发笔记/QT 的下载与安装.md",
     "QT 应用开发笔记/images",
@@ -244,8 +246,6 @@
     "Openclaw本地部署笔记/Windows+WSL+Ubuntu本地部署.md",
     "Claude Code本地部署笔记/Windows+WSL+Ubuntu本地部署.md",
     "Claude Code本地部署笔记/Claude Code 使用说明.md",
-    "Openclaw本地部署笔记/Openclaw暂时搁置的配置.md",
-    "Openclaw本地部署笔记/WSL2下STM32编译环境安装教程.md",
     "Untitled.canvas"
   ]
 }

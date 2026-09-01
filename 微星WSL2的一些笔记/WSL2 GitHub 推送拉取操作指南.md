@@ -9,13 +9,13 @@
 
 2. 配置 Git 用户信息：
    ```bash
-   git config --global user.name "你的GitHub用户名"
-   git config --global user.email "你的GitHub邮箱"
+   git config --global user.name "young-nights"
+   git config --global user.email "2863692760@qq.com"
    ```
 
 3. 生成 SSH 密钥并添加到 GitHub：
    ```bash
-   ssh-keygen -t ed25519 -C "你的GitHub邮箱"
+   ssh-keygen -t ed25519 -C "2863692760@qq.com"
    cat ~/.ssh/id_ed25519.pub
    ```
    将输出的公钥复制到 GitHub → Settings → SSH and GPG keys → New SSH key
@@ -24,6 +24,18 @@
    ```bash
    ssh -T git@github.com
    ```
+
+## 当前仓库列表
+
+| 仓库名称 | 本地路径 (WSL2) | 远程地址 (SSH) | 分支 | 说明 |
+|----------|----------------|---------------|------|------|
+| ota-upgrade-of-qi-charger-based-on-can | `/home/whites/embedded_item/ota-upgrade-of-qi-charger-based-on-can` | `git@github.com:young-nights/ota-upgrade-of-qi-charger-based-on-can.git` | main | Qi 无线充 CAN-UDS OTA 升级项目 |
+| obsidian-note | `/mnt/i/Obsidian note` | `git@github.com:young-nights/obsidian-note.git` | main | Obsidian 笔记仓库 |
+| smart-ledger | `/home/whites/.openclaw/workspace/projects/smart-ledger` | `git@github.com:young-nights/smart-ledger.git` | main | 智能记账应用 |
+
+> **新增仓库时**：在上表追加一行即可。
+
+---
 
 ## 从零推送新仓库
 
@@ -37,7 +49,7 @@ cd /path/to/your/project
 git init
 
 # 3. 添加远程仓库（替换为你的仓库地址）
-git remote add origin git@github.com:你的用户名/仓库名.git
+git remote add origin git@github.com:young-nights/仓库名.git
 
 # 4. 添加所有文件并提交
 git add -A
@@ -53,7 +65,7 @@ git push -u origin main
 
 ```bash
 # 1. 克隆远程仓库
-git clone git@github.com:你的用户名/仓库名.git
+git clone git@github.com:young-nights/仓库名.git
 
 # 2. 将代码复制到克隆目录中
 
@@ -64,11 +76,13 @@ git commit -m "添加代码"
 git push
 ```
 
+---
+
 ## 日常推送流程
 
 ```bash
 # 1. 拉取远程最新代码
-git pull origin main
+git pull
 
 # 2. 查看变更状态
 git status
@@ -80,8 +94,10 @@ git add -A
 git commit -m "提交说明"
 
 # 5. 推送
-git push origin main
+git push
 ```
+
+---
 
 ## WSL2 访问 Windows 文件系统的注意事项
 
@@ -91,6 +107,8 @@ git push origin main
   ```bash
   git config --global core.fsmonitor false
   ```
+
+---
 
 ## 常见问题
 
@@ -104,12 +122,16 @@ ssh-add ~/.ssh/id_ed25519
 # 确认远程地址是 SSH 协议
 git remote -v
 # 如果显示 https://，改为 SSH：
-git remote set-url origin git@github.com:你的用户名/仓库名.git
+git remote set-url origin git@github.com:young-nights/仓库名.git
 ```
 
 ### Q: 推送被拒绝 `rejected - non-fast-forward`
 
 ```bash
+# 先拉取再推送
+git pull --rebase origin main
+git push origin main
+
 # 强制推送（⚠️ 谨慎使用，会覆盖远程）
 git push --force-with-lease origin main
 ```
@@ -127,8 +149,11 @@ git branch -r
 git checkout -b 本地分支名 origin/远程分支名
 ```
 
+---
+
 ## 变更记录
 
 | 版本 | 日期 | 改动点 |
 |------|------|--------|
 | v1.0 | 2026-08-31 | 初始版本，包含 WSL2 推送 GitHub 完整操作指南 |
+| v1.1 | 2026-09-01 | 新增「当前仓库列表」表格，填入 3 个仓库实际路径和远程地址；补充 `git pull --rebase` 方案；用户信息改为实际值 |
