@@ -1,0 +1,274 @@
+# WSL2 串口数据抓取配置指南
+
+> 适用于 Windows 11 + WSL2 (Ubuntu-24.04) 环境，记录串口设备接入 WSL2 并实时抓取数据的完整流程。
+> 创建日期：2026-09-16
+
+---
+
+## 一、背景
+
+WSL2 基于轻量虚拟机架构，**不直接透传 Windows 的 USB / COM 串口设备**，因此无法像原生 Linux 或 WSL1 那样直接打开 `/dev/ttyUSB0` 或 `/dev/ttySx`。
+
+需要通过以下两种方案之一打通：
+
+| 方案 | 适用场景 | 复杂度 |
+|------|----------|--------|
+| usbipd-win 原生接入 | 需要交互调试（minicom / screen） | 中 |
+| Windows 侧抓取 + 共享文件 | 仅录制日志，不需要交互 | 低 |
+
+---
+
+## 二、方案一：usbipd-win（推荐）
+
+### 2.1 原理
+
+Windows 侧通过 `usbipd` 工具将 USB 串口设备以 USB/IP 协议"附加"到 WSL2 内核，Linux 侧识别为标准 `/dev/ttyUSB*`（USB 转串口芯片，如 CH340 / CP2102 / FT232）或 `/dev/ttyACM*`（USB CDC 类设备，如 STM32 虚拟串口）。
+
+### 2.2 Windows 侧安装
+
+打开 **PowerShell（管理员）**：
+
+```powershell
+winget install usbipd
+```
+
+安装完成后重开终端，验证：
+
+```powershell
+usbipd --version
+```
+
+### 2.3 查看设备列表
+
+```powershell
+usbipd list
+```
+
+输出示例：
+
+```
+BUSID  VID:PID    DEVICE                                                        STATE
+1-3    1a86:7523  USB-SERIAL CH340 (COM5)                                       Not attached
+1-7    0483:5740  STM32 Virtual COM Port (COM6)                                 Not attached
+```
+
+记下目标设备的 **BUSID**（如 `1-3`）和 **COM 号**（如 COM5）。
+
+### 2.4 绑定并附加设备
+
+```powershell
+# 绑定（仅首次，持久化）
+usbipd bind --busid 1-3
+
+# 附加到 WSL2（每次重启 WSL 后需重新执行）
+usbipd attach --wsl --busid 1-3
+```
+
+### 2.5 WSL2 内确认设备
+
+```bash
+# 查看是否出现串口设备
+ls /dev/ttyUSB* /dev/ttyACM*
+
+# 或通过 dmesg 确认驱动加载
+dmesg | tail -20
+```
+
+正常会看到类似：
+
+```
+[  12.345] usb 1-3: ch341-uart converter now attached to ttyUSB0
+```
+
+### 2.6 安装串口工具
+
+```bash
+sudo apt update
+sudo apt install minicom screen picocom -y
+```
+
+### 2.7 实时抓取串口数据
+
+#### minicom（推荐，交互友好）
+
+```bash
+# 115200 波特率打开
+sudo minicom -D /dev/ttyUSB0 -b 115200
+
+# 退出：Ctrl+A 然后按 X
+```
+
+首次使用需配置：
+
+```bash
+sudo minicom -s
+# Serial port setup → Serial Device 改为 /dev/ttyUSB0
+# Bps/Parity/Bits → 115200 8N1
+# Save setup as dfl
+```
+
+#### screen（轻量）
+
+```bash
+screen /dev/ttyUSB0 115200
+# 退出：Ctrl+A 然后按 K，再按 Y 确认
+```
+
+#### picocom（最简单）
+
+```bash
+picocom -b 115200 /dev/ttyUSB0
+# 退出：Ctrl+A 然后 Ctrl+X
+```
+
+#### 纯录制（无交互）
+
+```bash
+# 后台抓取原始数据到文件
+cat /dev/ttyUSB0 | tee serial_capture_$(date +%Y%m%d_%H%M%S).log
+```
+
+#### 带时间戳抓取
+
+```bash
+# 每行附加毫秒级时间戳
+stty -F /dev/ttyUSB0 115200 raw -echo
+cat /dev/ttyUSB0 | ts '%Y-%m-%d %H:%M:%.S' | tee serial.log
+# 需先安装 moreutils: sudo apt install moreutils
+```
+
+### 2.8 权限问题处理
+
+每次 `sudo` 不方便时，将当前用户加入 dialout 组：
+
+```bash
+sudo usermod -aG dialout $USER
+# 需注销重登生效
+```
+
+---
+
+## 三、方案二：Windows 侧抓取 + WSL2 读取
+
+不折腾 usbipd 时，在 Windows 抓，WSL2 直接读共享盘。
+
+### 3.1 Windows 侧抓取
+
+使用 PuTTY 自带的 plink（无需打开终端窗口）：
+
+```powershell
+# 持续抓取 COM5 数据到日志
+plink -serial COM5 -sercfg 115200,8,n,1,N > C:\serial_capture.log
+```
+
+或使用 PowerShell 原生：
+
+```powershell
+$port = New-Object System.IO.Ports.SerialPort COM5,115200,None,8,One
+$port.Open()
+while ($true) {
+    $line = $port.ReadLine()
+    $stamp = Get-Date -Format "HH:mm:ss.fff"
+    Add-Content -Path "C:\serial_capture.log" -Value "[$stamp] $line"
+}
+```
+
+### 3.2 WSL2 实时读取
+
+```bash
+tail -f /mnt/c/serial_capture.log
+```
+
+Windows 文件可跨系统实时访问，适合"Windows 抓 + Linux 分析"的流水线。
+
+---
+
+## 四、WSL1 与 WSL2 的差异
+
+| 特性 | WSL1 | WSL2 |
+|------|------|------|
+| 串口直连 | ✅ 直接访问 `/dev/ttyS3`（COM4） | ❌ 需要 usbipd |
+| 内核 | 翻译层，共享 Windows 内核 | 独立 Linux 内核 |
+| USB 设备 | 通过驱动映射 | USB/IP 协议接入 |
+
+如果串口使用频率极高且无复杂需求，可临时切回 WSL1：
+
+```powershell
+wsl --set-version Ubuntu-24.04 1
+# 切回 WSL2
+wsl --set-version Ubuntu-24.04 2
+```
+
+---
+
+## 五、常见问题排查
+
+### 5.1 `/dev/ttyUSB0` 不存在
+
+```bash
+# 检查 USB 设备是否被 WSL2 识别
+lsusb
+
+# 查看内核日志是否有设备加载记录
+dmesg | grep -i usb
+```
+
+### 5.2 `usbipd attach` 报错
+
+| 错误 | 原因 | 解决 |
+|------|------|------|
+| `error: WSL2 is not running` | WSL 未启动 | 先执行 `wsl` 进入后再附加 |
+| `error: device not found` | BUSID 错误 | 重新 `usbipd list` 确认 |
+| `error: access denied` | 未用管理员权限 | 用管理员 PowerShell |
+| `error: device is already attached` | 重复附加 | 先 `usbipd detach --busid X-X` |
+
+### 5.3 读取数据乱码
+
+```bash
+# 确认波特率一致（115200 最常见）
+stty -F /dev/ttyUSB0
+# 若乱码，尝试其他常用波特率：9600 / 38400 / 57600 / 115200 / 921600
+```
+
+### 5.4 WSL2 重启后设备丢失
+
+`usbipd attach` 是会话级的，WSL2 重启/关闭后自动断开。需在每次启动 WSL2 后重新执行：
+
+```powershell
+usbipd attach --wsl --busid 1-3
+```
+
+可写成 Windows 批处理 `attach_serial.bat`，双击一键附加：
+
+```bat
+@echo off
+usbipd attach --wsl --busid 1-3
+echo Serial device attached to WSL2.
+pause
+```
+
+---
+
+## 六、操作速查
+
+```bash
+# === Windows PowerShell（管理员） ===
+usbipd list                                  # 查看设备
+usbipd bind --busid 1-3                      # 绑定（首次）
+usbipd attach --wsl --busid 1-3              # 附加到 WSL2
+
+# === WSL2 终端 ===
+ls /dev/ttyUSB*                              # 确认设备
+sudo minicom -D /dev/ttyUSB0 -b 115200       # 打开串口
+stty -F /dev/ttyUSB0 115200 raw -echo        # 设置参数
+cat /dev/ttyUSB0 | tee serial.log            # 录制数据
+tail -f serial.log                           # 实时查看
+```
+
+---
+
+## 变更记录
+
+| 版本 | 日期 | 改动内容 |
+|------|------|----------|
+| V1.0 | 2026-09-16 | 初版：usbipd-win 方案、Windows 侧抓取方案、WSL1/WSL2 差异、常见问题排查 |
