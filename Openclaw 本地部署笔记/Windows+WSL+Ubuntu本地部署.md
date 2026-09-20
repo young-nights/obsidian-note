@@ -68,7 +68,7 @@ updated: 2026-09-20 10:38
 > ~/.openclaw/openclaw.json
 > 可通过 openclaw config file 查看完整路径。
 
-以下为 2026.4.22 版本的完整配置示例，按模块说明：
+以下为 2026.9.4 版本的完整配置示例，按模块说明：
 
 #### 2.1 核心代理配置 (agents)
 
@@ -133,16 +133,37 @@ updated: 2026-09-20 10:38
 
 <font size=2>
 
-> [!info] 新增配置模块说明（2026.4.x）
-> - plugins: 各供应商插件 + memory-core（记忆/梦境功能）
-> - hooks: 内部钩子，agent bootstrap 时自动执行（如 session-memory 自动加载记忆）
-> - skills: 额外技能目录，Agent 可自动发现并使用
+> [!info] 配置模块说明（2026.9.4）
+> - plugins: 各供应商插件（anthropic、codex、xiaomi、feishu），通过 `plugins.entries` 管理
+> - hooks: 内部钩子，`hooks.internal.entries` 中 `session-memory: { "enabled": true }` 自动加载会话记忆
+> - meta: `meta.migrations.modelPolicyAllowlist: true` 记录模型策略迁移状态；`meta.lastTouchedVersion` 记录最后修改版本
+> - commands: `commands.ownerAllowFrom` 指定允许执行管理命令的飞书用户 ID 列表
 
 </font>
 
-#### 2.7 Session 配置
+#### 2.7 Session 与路由配置
 
 <font size=2>
+
+2026.9.4 的 Session 和路由相关配置：
+
+- `bindings`: 路由绑定数组，当前配置 `[{ "agentId": "main", "match": { "channel": "feishu", "accountId": "*" } }]` 表示飞书全量路由到 main Agent
+- `talk.agentId`: 默认对话 Agent，当前为 `main`
+- `commands.ownerAllowFrom`: Owner 命令白名单，限定飞书用户 ou_... 可执行管理命令
+
+</font>
+
+#### 2.8 记忆与向量检索 (memory)
+
+<font size=2>
+
+2026.9.4 新增 `memory.search` 配置模块，支持 embedding 向量语义检索：
+
+- `memory.search.provider`: 使用 `openai-compatible` 协议
+- `memory.search.remote.baseUrl`: 本地 embedding 服务地址（如 `http://127.0.0.1:18800/v1`）
+- `memory.search.model`: embedding 模型名称（如 `embedding-2`）
+
+配套的 `hooks.internal.entries.session-memory: { "enabled": true }` 确保每次会话自动加载记忆上下文。
 
 </font>
 
