@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "IndexTTS本地部署[文本转语音]/问题详述.md",
-                "mode": "source",
+                "file": "微星WSL2的一些笔记/WSL2 串口数据抓取配置指南.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "问题详述"
+              "title": "WSL2 串口数据抓取配置指南"
             }
           }
         ]
@@ -199,6 +199,10 @@
   },
   "active": "d263037d291d3c61",
   "lastOpenFiles": [
+    "Ubuntu-Server配置笔记/Ubuntu-Server-Git环境搭建.md",
+    "Linux涉及到的一些笔记/🐧 Linux 笔记 MOC.md",
+    "Linux涉及到的一些笔记/Ubuntu-desktop配置.md",
+    "IndexTTS本地部署[文本转语音]/问题详述.md",
     "Openclaw 本地部署笔记/🦞 Openclaw本地部署笔记 MOC.md",
     "Openclaw 本地部署笔记/Ubuntu-server-OpenClaw本地部署.md",
     "Openclaw 本地部署笔记/Ubuntu-desktop-OpenClaw本地部署.md",
@@ -209,7 +213,6 @@
     "Templates For Templator/🗺️ MOC Template 使用说明.md",
     "微星WSL2的一些笔记/WSL2 GitHub 推送拉取操作指南.md",
     "微星WSL2的一些笔记/WSL2 GitHub 推送操作指南.md",
-    "Linux涉及到的一些笔记/Ubuntu-desktop配置.md",
     "QT 应用开发笔记/QT 的下载与安装.md",
     "QT 应用开发笔记/images",
     "QT 应用开发笔记/新建文件夹",
@@ -231,7 +234,6 @@
     "Openclaw 本地部署笔记",
     "QT 应用开发笔记",
     "新建文件夹",
-    "Linux涉及到的一些笔记/🐧 Linux 笔记 MOC.md",
     "Linux涉及到的一些笔记/IMX6ULL开发笔记/IMX6U66启动方式.md",
     "未命名.canvas",
     "Templates For Templator/MOC Template.md",
@@ -244,7 +246,6 @@
     "VScode 前端开发笔记/VScode前端开发环境搭建.md",
     "VScode 前端开发笔记/📁 VScode 前端开发笔记 MOC.md",
     "前后端设计开发笔记/CodeObservatory-环境搭建说明.md",
-    "Openclaw本地部署笔记/Windows+WSL+Ubuntu本地部署.md",
     "Untitled.canvas"
   ]
 }
