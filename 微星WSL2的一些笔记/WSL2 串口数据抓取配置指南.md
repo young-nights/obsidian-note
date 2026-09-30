@@ -202,6 +202,23 @@ stty -F /dev/ttyUSB0 9600 raw -echo
 cat /dev/ttyUSB0 | ts '%Y-%m-%d %H:%M:%.S' | tee serial.log
 ```
 
+#### hexdump / xxd 实时十六进制查看
+
+二进制协议（UDS、自定义帧）直接 `cat` 到终端会满屏乱码与控制字符，用十六进制流式查看：
+
+```bash
+# 十六进制 + ASCII 对照（16B/行，hexdump -C 标准格式）
+cat /dev/ttyUSB0 | hexdump -C
+
+# 逐字节即时刷新（1B/行，低速率下更跟手）
+cat /dev/ttyUSB0 | xxd -c 1
+
+# 边看边录：tee 落盘的同时终端继续实时刷
+cat /dev/ttyUSB0 | tee capture_$(date +%H%M%S).log | hexdump -C
+```
+
+退出：Ctrl+C。波特率必须先对齐硬件（见本节开头），否则看到的全是乱字节；`hexdump` 与 `xxd` 本机已自带（`/usr/bin/hexdump`、`/usr/bin/xxd`），无需安装。
+
 ---
 
 ## 三、方案二：Windows 侧抓取 + WSL2 读取
@@ -505,4 +522,5 @@ CH340 是 Qi UART（9600），COM9 是串口 CAN，两套硬件。
 | V1.1 | 2026-09-16 | 5.3（现 8.3）：hrdevmon 警告、`--force` 与恢复 |
 | V1.2 | 2026-09-25 | 本机实况（usbipd 5.3.0、已装 pyserial/python-can、dialout）；`/dev/ttyS*` 与 COM 的关系；设备互斥；AT-Link 不要 attach；Qi UART 9600 只听接法；智能体读串口步骤；CAN 方案 A（CANable/pyusb）与方案 B（ZCANPRO TCP 桥）；内核无 gs_usb/slcan；auto-attach |
 | V1.3 | 2026-09-25 | 当前 CAN 工具改为 COM9 串口 CAN（`3562:0101` / BUSID `7-2`）；第七节主路径改为 usbipd + python-can `slcan` 用户态；内核无 slcan 模块不影响；CH340 与 COM9 分工写进 8.7 |
+| V1.4 | 2026-09-30 | 2.8 新增 hexdump/xxd 实时十六进制查看（含 tee 边看边录） |
 |
