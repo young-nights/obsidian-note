@@ -322,11 +322,11 @@ pause
 
 ## 七、CAN：给智能体读总线
 
-**当前用的 CAN 工具是串口 CAN**：插上后设备管理器显示 **COM9**（`usbipd list` 里是 BUSID `7-2`，VID:PID `3562:0101`，名称「USB 串行设备 (COM9)」）。不是周立功 USBCAN 那种 WinUSB 盒子，也不是 gs_usb 网卡。
+**串口 CAN（USB 转 CAN 适配器，插在 Windows 上就是一个 COM 口）** 是本文展开的接入方式：`usbipd attach` 进 WSL 后出现 `/dev/ttyACM*` 或 `/dev/ttyUSB*`，智能体用 **python-can 的 `slcan` 用户态**直接收发，**不需要**内核 `CONFIG_CAN_SLCAN`，也不会出现 `can0`。其他形态的 CAN 盒子（gs_usb 网卡类、厂商 WinUSB 盒子）接入路径不同，本文不展开。
 
-它在 Windows 上就是一个 COM 口；`usbipd attach` 进 WSL 后变成 `/dev/ttyACM*` 或 `/dev/ttyUSB*`。智能体用 **python-can 的 `slcan` 用户态**直接跟这个串口说话，**不需要**内核 `CONFIG_CAN_SLCAN`，也不会出现 `can0`。
+本机实例（下面例程均按此展开）：设备管理器 **COM9**（`usbipd list` 里 BUSID `7-2`，VID:PID `3562:0101`，名称「USB 串行设备 (COM9)」）。
 
-COM9 **同一时刻只能给一边**：attach 之后 Windows 上 COM9 会消失（ZCANPRO / 串口助手都打不开这只盒子）；要还给 Windows 就 `detach`。
+设备**同一时刻只能给一边**：attach 之后 Windows 上会看不到这个 COM 口（Windows 侧串口工具都打不开它）；要还给 Windows 就 `detach`。
 
 Qi 充电器 CAN：**250 kbps、Classical CAN、29-bit 扩展帧**。关注 ID：
 
@@ -339,7 +339,7 @@ Qi 充电器 CAN：**250 kbps、Classical CAN、29-bit 扩展帧**。关注 ID�
 
 M1～M4 只在 Boot 里发，窗口大约几十毫秒。脚本先开、再给 MCU 上电。OTA 不更新 Boot。
 
-### 7.1 方案 A（当前，推荐）：COM9 串口 CAN → WSL slcan
+### 7.1 串口 CAN → WSL slcan（usbipd + python-can，本机在用）
 
 1. Windows 管理员 PowerShell 绑定（仅首次）：
 
@@ -391,48 +391,11 @@ bus = can.Bus(
 )
 ```
 
-5. 还给 Windows（ZCANPRO 或设备管理器要重新看到 COM9）：
+5. 还给 Windows（设备管理器重新看到 COM9）：
 
 ```powershell
 usbipd detach --busid 7-2
 ```
-
-### 7.2 方案 B：CANable / candleLight + pyusb
-
-另有 **gs_usb** 盒子时用这个。COM9 那只串口 CAN **不要**配 `interface="gs_usb"`。
-
-```python
-import can
-bus = can.Bus(interface="gs_usb", channel=0, bitrate=250000)
-for msg in bus:
-    print("%08X  %s" % (msg.arbitration_id, msg.data.hex()))
-```
-
-### 7.3 方案 C：周立功盒子 + ZCANPRO 留在 Windows
-
-周立功 USBCAN **不要** attach 进 WSL：没有 `zcanpro` 模块，内核也认不成网卡。
-
-```
-[USBCAN] → ZCANPRO 扩展脚本 监听 TCP → WSL python 连 Windows 主机 IP
-```
-
-WSL 里看 Windows 主机地址：
-
-```bash
-ip route | awk '/default/ {print $3}'
-```
-
-智能体读的是转发文本/JSON。桥接脚本需要时再写进仓库 `python_tools/`。
-
-### 7.4 不要做的
-
-- 把 AT-Link-Plus（BUSID `7-4`）attach 进 WSL 来「顺带」看串口
-- 指望 `/dev/ttyS*` 对应 COM9
-- 指望默认 WSL 内核出现 `can0`（没编 `gs_usb` / `slcan`）
-- COM9 还挂在 Windows 时，在 WSL 里找这只 CAN
-- 把 COM9 当 Qi 芯片 9600 UART 来听（那是 CH340，见 2.8）
-
----
 
 ## 八、常见问题排查
 
@@ -523,4 +486,4 @@ CH340 是 Qi UART（9600），COM9 是串口 CAN，两套硬件。
 | V1.2 | 2026-09-25 | 本机实况（usbipd 5.3.0、已装 pyserial/python-can、dialout）；`/dev/ttyS*` 与 COM 的关系；设备互斥；AT-Link 不要 attach；Qi UART 9600 只听接法；智能体读串口步骤；CAN 方案 A（CANable/pyusb）与方案 B（ZCANPRO TCP 桥）；内核无 gs_usb/slcan；auto-attach |
 | V1.3 | 2026-09-25 | 当前 CAN 工具改为 COM9 串口 CAN（`3562:0101` / BUSID `7-2`）；第七节主路径改为 usbipd + python-can `slcan` 用户态；内核无 slcan 模块不影响；CH340 与 COM9 分工写进 8.7 |
 | V1.4 | 2026-09-30 | 2.8 新增 hexdump/xxd 实时十六进制查看（含 tee 边看边录） |
-|
+| V1.5 | 2026-09-30 | 删除 7.2/7.3/7.4（无对应硬件、场景固化）；§七 改为通用说明+具体例程，7.1 去方案编号；常见注意事项由 8.x 承接 |
