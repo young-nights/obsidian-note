@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "微星WSL2的一些笔记/WSL2 串口数据抓取配置指南.md",
-                "mode": "preview",
+                "file": "微星WSL2的一些笔记/WSL2 GitHub 推送拉取操作指南.md",
+                "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "WSL2 串口数据抓取配置指南"
+              "title": "WSL2 GitHub 推送拉取操作指南"
             }
           }
         ]
@@ -199,10 +199,10 @@
   },
   "active": "d263037d291d3c61",
   "lastOpenFiles": [
+    "微星WSL2的一些笔记/WSL2 串口数据抓取配置指南.md",
+    "微星WSL2的一些笔记/WSL2 GitHub 推送拉取操作指南.md",
     "微星WSL2的一些笔记/固件发布MD5打包解包与验证指南.md",
     "微星WSL2的一些笔记/WSL2 串口数据抓取配置指南.md.bak4",
-    "微星WSL2的一些笔记/WSL2 GitHub 推送拉取操作指南.md",
-    "微星WSL2的一些笔记/WSL2 串口数据抓取配置指南.md",
     "微星WSL2的一些笔记/WSL2 串口数据抓取配置指南.md.bak3",
     "Ubuntu-Server配置笔记/Ubuntu-Server-Git环境搭建.md",
     "Linux涉及到的一些笔记/🐧 Linux 笔记 MOC.md",
