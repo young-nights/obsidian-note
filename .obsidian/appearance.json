@@ -1,5 +1,6 @@
 {
   "enabledCssSnippets": [
     "font-sizes"
-  ]
+  ],
+  "showRibbon": true
 }

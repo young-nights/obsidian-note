@@ -35,7 +35,7 @@ npm -v
 
 这时大概率 `node -v` 会有正常版本显示，但是 `npm -v` 会报错
 
-![npm版本无法查看](./images/front1.png)
+![npm版本无法查看](front1.png)
 
 > [!warning] 问题原因
 > 遇到的错误是 Windows PowerShell 执行策略（Execution Policy） 设置为 Restricted（默认最严格模式），导致 PowerShell 禁止运行任何 .ps1 脚本文件（包括 Node.js 自带的 npm.ps1、npx.ps1 等），这是 Windows 新安装 Node.js 后非常常见的权限问题，不会影响 Node.js 本身，只是 PowerShell 终端受限。

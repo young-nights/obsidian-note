@@ -66,11 +66,11 @@ sudo apt install vim
 
 ipconfig
 ```
-![查看ip地址](./images/img_ip_config_2.png)
+![查看ip地址](img_ip_config_2.png)
 
 **静态IPv4地址分配**
 
-![分配静态IP地址](./images/img_ip_config_1.png)
+![分配静态IP地址](img_ip_config_1.png)
 
 设置完成后验证ip地址是否与宿主机桥接成功
 
@@ -81,7 +81,7 @@ ipconfig
 ping 192.168.1.166
 ```
 
-![检验静态IP配置](./images/img_ip_config_3.png)
+![检验静态IP配置](img_ip_config_3.png)
 
 ---
 
@@ -139,7 +139,7 @@ write_enable=YES
 ```
 
 4. 确保上面两行前面没有“#”，有的话就取消掉，完成以后如图所示
-![修改后](./images/img_ftp_1.png)
+![修改后](img_ftp_1.png)
 
 5. 修改完 vsftpd.conf 以后保存退出，使用如下命令重启 FTP 服务
 ```bash
@@ -150,11 +150,11 @@ sudo /etc/init.d/vsftpd restart
 1. Windows 下 FTP 客户端使用 FileZilla，这是个免费的 FTP 客户端软件，可以在 FileZilla 官网下载
 [FileZilla官网下载链接](https://www.filezilla.cn/download)
 2. FileZilla 软件界面
-![FileZilla](./images/img_ftp_2.png)
+![FileZilla](img_ftp_2.png)
 
 **FileZilla软件设置**
 Ubuntu 作为 FTP 服务器， FileZilla 作为 FTP 客户端，客户端要连接到服务器上，打开站点管理器，点击：文件->站点管理器，打开以后如图所示。
-![FileZilla](./images/img_ftp_3.png)
+![FileZilla](img_ftp_3.png)
 
 </font>
 
@@ -181,7 +181,7 @@ sudo vim /etc/exports
 ```
 
 打开配置文件后，在文件内容的末尾添加`/home/nights/linux/nfs *(rw,sync,no_root_squash)`
-![添加配置](./images/img_nfs_1.png)
+![添加配置](img_nfs_1.png)
 
 ```bash
 
@@ -244,7 +244,7 @@ Ubuntu 默认自带的编译器是基于X86框架的 GCC 编译器，现在需�
 
 从宿主机类别看，有以下几种类别：
 
-![gcc编译器的类别](./GCC_Type.svg)
+![gcc编译器的类别](GCC_Type.svg)
 
 解释：
 - arm-  ： ARMv7及更早的32位构架(Cortex-A7/A9)
@@ -255,7 +255,7 @@ Ubuntu 默认自带的编译器是基于X86框架的 GCC 编译器，现在需�
 
 本次使用的是基于Cortex-A7构架的I.MX6U多核处理器的开发板，因此此处使用`arm-none-linux-gnueabihf`版本的交叉编译器工具链。
 
-![gcc编译器下载](./images/img_toolchains_1.png)
+![gcc编译器下载](img_toolchains_1.png)
 
 下载完成以后，把交叉编译器工具链的包移动到`linux文件夹`下的`tool文件夹`中;
 
@@ -298,7 +298,7 @@ sudo vim /etc/profile
 
 export PATH=$PATH:/usr/local/arm/arm-gnu-toolchain-14.3-rel1-x86_64-arm-none-linux-gnueabihf/bin
 ```
-![配置环境变量](./images/img_toolchains_2.png)
+![配置环境变量](img_toolchains_2.png)
 
 重启Ubuntu后，验证交叉编译器
 
